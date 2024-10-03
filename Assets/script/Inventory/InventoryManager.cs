@@ -131,18 +131,38 @@ public class InventoryManager : MonoBehaviour
 
             // Добавляем кнопку для выбрасывания предмета в мир
 
-            Button throwButton = itemObject.transform.Find("Delit_Predmet")?.GetComponentInChildren<Button>();
-            if (throwButton != null)
+            Dropdown dropdownMenu = itemObject.GetComponentInChildren<Dropdown>(true);
+            if (dropdownMenu != null)
             {
-                throwButton.onClick.AddListener(() => ThrowItem(item));
+                dropdownMenu.onValueChanged.AddListener(delegate
+                {
+                    DropdownValueChanged(dropdownMenu, item);
+                });
             }
         }
     }
 
     // Новый метод для выбрасывания предмета в мир
-    void ThrowItem(StackableItem item)
+    void DropdownValueChanged(Dropdown change, StackableItem item)
     {
-        RemoveItem(item, true);
+        switch (change.value)
+        {
+            //case 0:
+            //    // Логика для отображения информации о предмете
+            //    break;
+            case 0:
+                // Логика для отображения информации о предмете
+                break;
+            case 1:
+                // Логика для применения предмета
+                break;
+            case 2:
+                // Логика для выбрасывания предмета в мир
+                RemoveItem(item, true);
+                break;
+            default:
+                break;
+        }
     }
 }
 
