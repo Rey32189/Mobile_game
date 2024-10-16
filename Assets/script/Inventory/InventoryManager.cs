@@ -12,6 +12,7 @@ public class InventoryManager : MonoBehaviour
     public Transform inventoryPanel; // Панель инвентаря для размещения элементов
     public Transform playerTransform; // Позиция игрока или персонажа
     public List<ItemPrefabEntry> itemPrefabsList;  // Словарь для хранения префабов предметов
+    public int maxSlots = 5; // Максимальное количество ячеек в инвентаре
 
     private Dictionary<string, GameObject> itemWorldPrefabs = new Dictionary<string, GameObject>(); // Словарь для хранения префабов для разных типов предметов
     private List<StackableItem> items = new List<StackableItem>(); // Список для хранения предметов
@@ -28,8 +29,11 @@ public class InventoryManager : MonoBehaviour
     }
 
     // Метод для добавления предмета в инвентарь
-    public void AddItem(StackableItem newItem)
+    public bool AddItem(StackableItem newItem)
     {
+        // Переменная для отслеживания количества добавленных предметов
+        int totalAdded = 0;
+
         // Поиск предмета в списке
         List<StackableItem> existingStacks = items.FindAll(item => item.itemName == newItem.itemName);
 
@@ -38,20 +42,38 @@ public class InventoryManager : MonoBehaviour
         {
             if (newItem.quantity == 0) break; // Если предметы закончились, выходим из цикла
 
-            int quantityToAdd = Mathf.Min(newItem.quantity, 3 - stack.quantity); // Сколько предметов можно добавить в эту стопку
-            stack.quantity += quantityToAdd;
-            newItem.quantity -= quantityToAdd;
+            // Сколько предметов можно добавить в эту стопку
+            int quantityToAdd = Mathf.Min(newItem.quantity, 3 - stack.quantity);
+
+            // Проверка, чтобы не превышать максимальное количество в ячейке
+            if (quantityToAdd > 0)
+            {
+                stack.quantity += quantityToAdd;
+                newItem.quantity -= quantityToAdd;
+                totalAdded += quantityToAdd; // Увеличиваем общее количество добавленных предметов
+            }
         }
 
         // Если остались предметы, создаем новые стопки
-        while (newItem.quantity > 0)
+        while (newItem.quantity > 0 && items.Count < maxSlots)
         {
-            int quantityToAdd = Mathf.Min(newItem.quantity, 3); // Сколько предметов можно добавить в новую стопку
-            items.Add(new StackableItem(newItem.itemName, newItem.itemIcon, quantityToAdd));
-            newItem.quantity -= quantityToAdd;
+            int quantityToAdd = Mathf.Min(newItem.quantity, 3); // Максимум 3 предмета в одной ячейке
+
+            // Создаем новую стопку только если есть возможность добавить предметы
+            if (quantityToAdd > 0)
+            {
+                items.Add(new StackableItem(newItem.itemName, newItem.itemIcon, quantityToAdd));
+                newItem.quantity -= quantityToAdd;
+                totalAdded += quantityToAdd; // Увеличиваем общее количество добавленных предметов
+            }
         }
 
+        if (totalAdded == 0)
+        {
+            return false; // Не удалось добавить ни одного предмета
+        }
         DisplayItems(); // Обновляем отображение инвентаря
+        return true; // Предметы были успешно добавлены
     }
 
     // Метод для удаления предмета из инвентаря
@@ -142,7 +164,7 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
-    // Новый метод для выбрасывания предмета в мир
+    // Новый метод для панели применения предметов
     void DropdownValueChanged(Dropdown change, StackableItem item)
     {
         switch (change.value)

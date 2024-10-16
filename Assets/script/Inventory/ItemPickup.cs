@@ -28,11 +28,19 @@ public class ItemPickup : MonoBehaviour
             // Добавляем предмет в инвентарь
             if (inventoryManager != null)
             {
-                inventoryManager.AddItem(item);
-            }
+                // Проверяем, удастся ли добавить предмет в инвентарь
+                bool added = inventoryManager.AddItem(item);
 
-            // Удаляем предмет из сцены после добавления в инвентарь
-            Destroy(gameObject);
+                // Удаляем предмет из сцены только если он был успешно добавлен в инвентарь
+                if (added)
+                {
+                    Destroy(gameObject);
+                }
+                else
+                {
+                    Debug.Log("Инвентарь полон, предмет не был добавлен: " + itemName);
+                }
+            }
         }
     }
 }
