@@ -5,6 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine; // Основное пространство имён Unity
 using UnityEngine.UI; // Для работы с UI элементами
 using TMPro;
+using static UnityEditor.Progress;
 
 public class InventoryManager : MonoBehaviour
 {
@@ -13,6 +14,9 @@ public class InventoryManager : MonoBehaviour
     public Transform playerTransform; // Позиция игрока или персонажа
     public List<ItemPrefabEntry> itemPrefabsList;  // Словарь для хранения префабов предметов
     public int maxSlots = 5; // Максимальное количество ячеек в инвентаре
+    public int activSlots = 2; // активные ячейки
+    
+
 
     private Dictionary<string, GameObject> itemWorldPrefabs = new Dictionary<string, GameObject>(); // Словарь для хранения префабов для разных типов предметов
     private List<StackableItem> items = new List<StackableItem>(); // Список для хранения предметов
@@ -55,7 +59,7 @@ public class InventoryManager : MonoBehaviour
         }
 
         // Если остались предметы, создаем новые стопки
-        while (newItem.quantity > 0 && items.Count < maxSlots)
+        while (newItem.quantity > 0 && items.Count < activSlots)
         {
             int quantityToAdd = Mathf.Min(newItem.quantity, 3); // Максимум 3 предмета в одной ячейке
 
@@ -129,11 +133,13 @@ public class InventoryManager : MonoBehaviour
         foreach (Transform child in inventoryPanel)
         {
             Destroy(child.gameObject); // Удаляем старый элемент из панели
-        }
+                                       }
 
-        // Создаем новые элементы для каждого предмета
-        foreach (var item in items)
-        {
+            // Отображаем заполненные ячейки
+            for (int i = 0; i < items.Count && i < activSlots; i++) // Отображаем только первые 5 предметов
+                                                           {
+                var item = items[i];
+
             // Создаем новый элемент UI для предмета
             GameObject itemObject = Instantiate(itemPrefab, inventoryPanel);
 
@@ -150,19 +156,67 @@ public class InventoryManager : MonoBehaviour
             {
                 itemText.text = $"{item.itemName} ({item.quantity})"; // Устанавливаем текст как имя предмета и количество
             }
+        
 
-            // Добавляем кнопку для выбрасывания предмета в мир
-
-            Dropdown dropdownMenu = itemObject.GetComponentInChildren<Dropdown>(true);
+        // Добавляем кнопку для выбрасывания предмета в мир
+        Dropdown dropdownMenu = itemObject.GetComponentInChildren<Dropdown>(true);
             if (dropdownMenu != null)
             {
-                dropdownMenu.onValueChanged.AddListener(delegate
+                dropdownMenu.onValueChanged.AddListener(delegate 
                 {
                     DropdownValueChanged(dropdownMenu, item);
-                });
+                } );
+            }
+        }
+
+        // Отображаем пустые ячейки
+        int activeSlots = Mathf.Min(activSlots, items.Count); // Количество активных ячеек
+        int emptySlots = activSlots - activeSlots; // Количество пустых ячеек (белых)
+
+        // Отображаем пустые ячейки (белые)
+        for (int i = 0; i < emptySlots; i++)
+        {
+            // Создаем новый элемент UI для пустой ячейки
+            GameObject emptySlotObject = Instantiate(itemPrefab, inventoryPanel);
+
+            // Получаем компонент Image для пустой ячейки и устанавливаем белый цвет
+            Image emptySlotImage = emptySlotObject.GetComponentInChildren<Image>();
+            if (emptySlotImage != null)
+            {
+                emptySlotImage.color = Color.white; // Устанавливаем белый цвет для пустой ячейки
+            }
+
+            // Убираем текст для пустых ячеек
+            Text emptySlotText = emptySlotObject.GetComponentInChildren<Text>();
+            if (emptySlotText != null)
+            {
+                emptySlotText.text = "Пусто"; // Указываем, что ячейка пуста
+            }
+        }
+
+        // Отображаем закрытые ячейки (серые)
+        int closedSlots = maxSlots - activSlots; // Количество закрытых ячеек
+        for (int i = 0; i < closedSlots; i++)
+        {
+            // Создаем новый элемент UI для закрытой ячейки
+            GameObject closedSlotObject = Instantiate(itemPrefab, inventoryPanel);
+
+            // Получаем компонент Image для закрытой ячейки и устанавливаем серый цвет
+            Image closedSlotImage = closedSlotObject.GetComponentInChildren<Image>();
+            if (closedSlotImage != null)
+            {
+               closedSlotImage.color = Color.gray; // Устанавливаем серый цвет для закрытой ячейки
+            }
+
+            // Устанавливаем текст для закрытых ячеек
+            Text closedSlotText = closedSlotObject.GetComponentInChildren<Text>();
+            if (closedSlotText != null)
+            {
+                closedSlotText.text = "Закрыто"; // Указываем, что ячейка закрыта
             }
         }
     }
+    
 
     // Новый метод для панели применения предметов
     void DropdownValueChanged(Dropdown change, StackableItem item)

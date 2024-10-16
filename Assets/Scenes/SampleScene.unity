@@ -1342,6 +1342,8 @@ MonoBehaviour:
     prefab: {fileID: 4731452368723047192, guid: ba284b57a0478bf4a9167888e4b29bc0, type: 3}
   - itemName: Patron
     prefab: {fileID: 3968173450724685328, guid: f459a8be60db409429d9213e0f7ae032, type: 3}
+  maxSlots: 5
+  activSlots: 2
 --- !u!4 &315777905
 Transform:
   m_ObjectHideFlags: 0
