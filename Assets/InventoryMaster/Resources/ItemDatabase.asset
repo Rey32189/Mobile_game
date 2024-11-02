@@ -44,7 +44,7 @@ MonoBehaviour:
     itemWeight: 0
     maxStack: 1
     indexItemInList: 999
-    rarity: 23
+    rarity: 24
     itemAttributes:
     - attributeName: Health
       attributeValue: 10

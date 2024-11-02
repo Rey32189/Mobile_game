@@ -89,6 +89,7 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ObjectSpin.cs" />
     <Compile Include="Assets\InventoryMaster\Scripts\ExampleScript\WorkingStation.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_PhoneNumberValidator.cs" />
+    <Compile Include="Assets\SceneSwitcher.cs" />
     <Compile Include="Assets\InventoryMaster\Scripts\ExampleScript\RandomLootSystem.cs" />
     <Compile Include="Assets\script\Ammo.cs" />
     <Compile Include="Assets\InventoryMaster\Scripts\Inventory\InventoryDesign.cs" />
@@ -117,6 +118,7 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_B.cs" />
     <Compile Include="Assets\script\Armor.cs" />
     <Compile Include="Assets\InventoryMaster\Scripts\Inventory\InputManager.cs" />
+    <Compile Include="Assets\InventoryData.cs" />
     <Compile Include="Assets\InventoryMaster\Scripts\CraftSystem\LeftClick.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\SkewTextExample.cs" />
     <Compile Include="Assets\InventoryMaster\Scripts\CraftSystem\CraftResultSlot.cs" />
@@ -142,6 +144,7 @@
     <Compile Include="Assets\InventoryMaster\Scripts\Inventory\EquipmentSystem.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextInfoDebugTool.cs" />
     <Compile Include="Assets\InventoryMaster\Scripts\Item\DragItem.cs" />
+    <Compile Include="Assets\GameController.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

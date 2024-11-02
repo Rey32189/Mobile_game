@@ -1,53 +1,54 @@
-﻿using UnityEngine;
-using System.Collections;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
+﻿using UnityEngine;                                         // Подключаем пространство имен Unity для работы с игровыми объектами
+using System.Collections;                                  // Подключаем пространство имен для работы с коллекциями
+using UnityEngine.UI;                                     // Подключаем пространство имен для работы с элементами пользовательского интерфейса
+using UnityEngine.EventSystems;                           // Подключаем пространство имен для работы с событиями интерфейса
 
-public class SplitItem : MonoBehaviour, IPointerDownHandler
-{     //splitting an Item
+public class SplitItem : MonoBehaviour, IPointerDownHandler // Определяем класс SplitItem, наследующий от MonoBehaviour и реализующий интерфейс IPointerDownHandler
+{                                                         // Начало класса SplitItem
+    private bool pressingButtonToSplit;                    // Булева переменная для отслеживания нажатия кнопки для разделения предмета
+    public Inventory inv;                                   // Ссылка на скрипт инвентаря
+    static InputManager inputManagerDatabase = null;       // Статическая переменная для хранения ссылки на менеджер ввода
 
-    private bool pressingButtonToSplit;             //bool for pressing a item to split it
-    public Inventory inv;                          //inventory script  
-    static InputManager inputManagerDatabase = null;
-
-    void Update()
+    void Update()                                          // Метод, который вызывается каждый кадр
     {
-        if (Input.GetKeyDown(inputManagerDatabase.SplitItem))                     //if we press right controll the ....
-            pressingButtonToSplit = true;                               //getting changed to true 
-        if (Input.GetKeyUp(inputManagerDatabase.SplitItem))
-            pressingButtonToSplit = false;                              //or false
-
+        if (Input.GetKeyDown(inputManagerDatabase.SplitItem)) // Если нажата клавиша для разделения предмета
+            pressingButtonToSplit = true;                   // Устанавливаем переменную pressingButtonToSplit в true
+        if (Input.GetKeyUp(inputManagerDatabase.SplitItem)) // Если клавиша для разделения предмета отпущена
+            pressingButtonToSplit = false;                  // Устанавливаем переменную pressingButtonToSplit в false
     }
 
-    void Start()
+    void Start()                                           // Метод, который вызывается при инициализации объекта
     {
-        inputManagerDatabase = (InputManager)Resources.Load("InputManager");
+        inputManagerDatabase = (InputManager)Resources.Load("InputManager"); // Загружаем ресурс InputManager из папки Resources
     }
 
-    public void OnPointerDown(PointerEventData data)                    //splitting the item now
+    public void OnPointerDown(PointerEventData data)       // Метод, который вызывается при нажатии кнопки мыши
     {
-        inv = transform.parent.parent.parent.GetComponent<Inventory>();
-        if (transform.parent.parent.parent.GetComponent<Hotbar>() == null && data.button == PointerEventData.InputButton.Left && pressingButtonToSplit && inv.stackable && (inv.ItemsInInventory.Count < (inv.height * inv.width))) //if you press leftclick and and keycode
+        inv = transform.parent.parent.parent.GetComponent<Inventory>(); // Получаем компонент Inventory из родительского объекта
+        // Проверяем, что объект не является горячей панелью, нажата левая кнопка мыши, кнопка для разделения нажата, предметы в инвентаре могут быть сложены и в инвентаре достаточно места
+        if (transform.parent.parent.parent.GetComponent<Hotbar>() == null && data.button == PointerEventData.InputButton.Left && pressingButtonToSplit && inv.stackable && (inv.ItemsInInventory.Count < (inv.height * inv.width)))
         {
-            ItemOnObject itemOnObject = GetComponent<ItemOnObject>();                                                   //we take the ItemOnObject script of the item in the slot
+            ItemOnObject itemOnObject = GetComponent<ItemOnObject>(); // Получаем компонент ItemOnObject у текущего объекта
 
-            if (itemOnObject.item.itemValue > 1)                                                                         //we split the item only when we have more than 1 in the stack
+            // Проверяем, что количество предметов больше 1, чтобы можно было разделить
+            if (itemOnObject.item.itemValue > 1)
             {
-                int splitPart = itemOnObject.item.itemValue;                                                           //we take the value and store it in there
-                itemOnObject.item.itemValue = (int)itemOnObject.item.itemValue / 2;                                     //calculate the new value for the splitted item
-                splitPart = splitPart - itemOnObject.item.itemValue;                                                   //take the different
+                int splitPart = itemOnObject.item.itemValue;         // Сохраняем текущее количество предметов в переменной splitPart
+                itemOnObject.item.itemValue = (int)itemOnObject.item.itemValue / 2; // Делим количество предметов пополам
+                splitPart = splitPart - itemOnObject.item.itemValue; // Вычисляем количество разделенной части
 
-                inv.addItemToInventory(itemOnObject.item.itemID, splitPart);                                            //and add a new item to the inventory
-                inv.stackableSettings();
+                // Добавляем новый предмет в инвентарь
+                inv.addItemToInventory(itemOnObject.item.itemID, splitPart);
+                inv.stackableSettings(); // Обновляем настройки для складываемых предметов
 
+                // Проверяем, есть ли дубликат предмета
                 if (GetComponent<ConsumeItem>().duplication != null)
                 {
-                    GameObject dup = GetComponent<ConsumeItem>().duplication;
-                    dup.GetComponent<ItemOnObject>().item.itemValue = itemOnObject.item.itemValue;
-                    dup.GetComponent<SplitItem>().inv.stackableSettings();
+                    GameObject dup = GetComponent<ConsumeItem>().duplication; // Получаем дубликат предмета
+                    dup.GetComponent<ItemOnObject>().item.itemValue = itemOnObject.item.itemValue; // Устанавливаем значение предмета дубликата
+                    dup.GetComponent<SplitItem>().inv.stackableSettings(); // Обновляем настройки дубликата
                 }
-                inv.updateItemList();
-
+                inv.updateItemList(); // Обновляем список предметов в инвентаре
             }
         }
     }

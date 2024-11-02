@@ -1,25 +1,26 @@
-﻿using UnityEngine;
-using System.Collections;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
+﻿using UnityEngine;                                        // Подключаем пространство имен для работы с Unity
+using System.Collections;                                 // Подключаем пространство имен для работы с коллекциями
+using UnityEngine.UI;                                    // Подключаем пространство имен для работы с UI элементами
+using UnityEngine.EventSystems;                          // Подключаем пространство имен для работы с событиями интерфейса
 
-public class ItemOnObject : MonoBehaviour                   //Saves the Item in the slot
+public class ItemOnObject : MonoBehaviour               // Определяем класс ItemOnObject, наследующий от MonoBehaviour
 {
-    public Item item;                                       //Item 
-    private Text text;                                      //text for the itemValue
-    private Image image;
+    public Item item;                                    // Объявляем публичное поле для хранения информации об объекте Item
+    private Text text;                                   // Объявляем приватное поле для хранения ссылки на компонент Text
+    private Image image;                                 // Объявляем приватное поле для хранения ссылки на компонент Image
 
-    void Update()
+    void Update()                                        // Метод, который вызывается каждый кадр
     {
-        text.text = "" + item.itemValue;                     //sets the itemValue         
-        image.sprite = item.itemIcon;
-        GetComponent<ConsumeItem>().item = item;
+        text.text = "" + item.itemValue;                // Обновляем текстовое поле, устанавливая значение itemValue из объекта Item
+        image.sprite = item.itemIcon;                   // Устанавливаем спрайт изображения в соответствии с иконкой предмета
+        GetComponent<ConsumeItem>().item = item;       // Получаем компонент ConsumeItem и присваиваем ему текущий предмет
     }
 
-    void Start()
+    void Start()                                         // Метод, который вызывается при инициализации объекта
     {
-        image = transform.GetChild(0).GetComponent<Image>();
-        transform.GetChild(0).GetComponent<Image>().sprite = item.itemIcon;                 //set the sprite of the Item 
-        text = transform.GetChild(1).GetComponent<Text>();                                  //get the text(itemValue GameObject) of the item
+        image = transform.GetChild(0).GetComponent<Image>(); // Получаем компонент Image из первого дочернего объекта
+        transform.GetChild(0).GetComponent<Image>().sprite = item.itemIcon; // Устанавливаем спрайт для изображения предмета
+        text = transform.GetChild(1).GetComponent<Text>(); // Получаем компонент Text из второго дочернего объекта
     }
 }
+
