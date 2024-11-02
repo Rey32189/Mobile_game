@@ -7,6 +7,21 @@ TagManager:
   - Ammo
   - predmet
   - Vrag
+  - Slot
+  - Canvas
+  - Panel
+  - Slots
+  - DraggingItem
+  - EventSystem
+  - Item
+  - ItemIcon
+  - CraftSystem
+  - ResultSlot
+  - Tooltip
+  - EquipmentSystem
+  - MainInventory
+  - Hotbar
+  - Timer
   layers:
   - Default
   - TransparentFX

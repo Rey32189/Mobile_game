@@ -33,7 +33,7 @@ public class Ammo : MonoBehaviour // появление патронов
             return;
         }
 
-}
+    }
 void DestroyAmmo()
     {
         Destroy(gameObject);

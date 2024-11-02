@@ -22,6 +22,7 @@ public class Enemy : MonoBehaviour // мигание противника и его смерть
 
     private LootDropper lootDropper; // для выпадения ресурсов
 
+
     private void Start()
     {
         lootDropper = GetComponent<LootDropper>(); //инициализируем 
@@ -60,6 +61,8 @@ public class Enemy : MonoBehaviour // мигание противника и его смерть
             Invoke("ResetMaterial", 0.5f); //если не убили, сработает функия через 0.2 секунды
         }
     }
+    
+    
     void Die()
     {
         //Destroy(gameObject); // отвечает за разрушение объекта, но не подходит для респауна
