@@ -93,7 +93,7 @@ public class ConsumeItem : MonoBehaviour, IPointerDownHandler // Определ�
                                     {
                                         GameObject otherItemFromCharacterSystem = eS.transform.GetChild(1).GetChild(i).GetChild(0).gameObject; // Получение другого предмета из слота.
                                         Item otherSlotItem = otherItemFromCharacterSystem.GetComponent<ItemOnObject>().item; // Получение информации о другом предмете.
-                                        if (item.itemType == ItemType.UFPS_Weapon) // Проверка, является ли предмет оружием.
+                                        if (item.itemType == ItemType.Weapon) // Проверка, является ли предмет оружием.
                                         {
                                             inventory.UnEquipItem1(otherItemFromCharacterSystem.GetComponent<ItemOnObject>().item); // Снятие другого предмета с экипировки.
                                             inventory.EquiptItem(item); // Экипировка нового предмета.
@@ -135,7 +135,7 @@ public class ConsumeItem : MonoBehaviour, IPointerDownHandler // Определ�
                         }
                     }
                 }
-                if (!gearable && item.itemType != ItemType.UFPS_Ammo && item.itemType != ItemType.UFPS_Grenade) // Если предмет не может быть экипирован и не является боеприпасом или гранатой.
+                if (!gearable && item.itemType != ItemType.Ammo && item.itemType != ItemType.UFPS_Grenade) // Если предмет не может быть экипирован и не является боеприпасом или гранатой.
                 {
                     Item itemFromDup = null; // Переменная для хранения информации о предмете из дубликата.
                     if (duplication != null) // Проверка, существует ли дубликат.
@@ -216,7 +216,7 @@ public class ConsumeItem : MonoBehaviour, IPointerDownHandler // Определ�
                         {
                             GameObject otherItemFromCharacterSystem = eS.transform.GetChild(1).GetChild(i).GetChild(0).gameObject; // Получение другого предмета из слота.
                             Item otherSlotItem = otherItemFromCharacterSystem.GetComponent<ItemOnObject>().item; // Получение информации о другом предмете.
-                            if (item.itemType == ItemType.UFPS_Weapon) // Проверка, является ли предмет оружием.
+                            if (item.itemType == ItemType.Weapon) // Проверка, является ли предмет оружием.
                             {
                                 inventory.UnEquipItem1(otherItemFromCharacterSystem.GetComponent<ItemOnObject>().item); // Снятие другого предмета с экипировки.
                                 inventory.EquiptItem(item); // Экипировка нового предмета.
@@ -257,7 +257,7 @@ public class ConsumeItem : MonoBehaviour, IPointerDownHandler // Определ�
                 }
             }
         }
-        if (!gearable && item.itemType != ItemType.UFPS_Ammo && item.itemType != ItemType.UFPS_Grenade) // Если предмет не может быть экипирован и не является боеприпасом или гранатой.
+        if (!gearable && item.itemType != ItemType.Ammo && item.itemType != ItemType.UFPS_Grenade) // Если предмет не может быть экипирован и не является боеприпасом или гранатой.
         {
             if (duplication != null) // Проверка, существует ли дубликат.
                 itemFromDup = duplication.GetComponent<ItemOnObject>().item; // Получение информации о предмете из дубликата.

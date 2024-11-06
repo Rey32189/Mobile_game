@@ -6,12 +6,12 @@ public class Damag_vrag : MonoBehaviour
 {
     public int damage_player; //количество урона
     //нанесение урона игроку
-    private void OnTriggerEnter(Collider hitInfo) // ищем объект с компонентом хитинфо
+    private void OnTriggerEnter(Collider currentHealth) // ищем объект с компонентом хитинфо
     {
 
-        if (hitInfo.CompareTag("Player"))
+        if (currentHealth.CompareTag("Player"))
         {
-            HealthBar healthBar = hitInfo.GetComponent<HealthBar>(); // берет кусок кода из врага для взаимодействия
+            PlayerInventory healthBar = currentHealth.GetComponent<PlayerInventory>(); // берет кусок кода из врага для взаимодействия
             if (healthBar != null)
             {
                 healthBar.TakeDamage_player(damage_player);

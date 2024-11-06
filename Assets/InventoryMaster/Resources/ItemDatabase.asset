@@ -242,7 +242,7 @@ MonoBehaviour:
       + 10 Health'
     itemIcon: {fileID: 21300000, guid: a4d3f378d1a88f346af15ee906321f2a, type: 3}
     itemModel: {fileID: 100000, guid: 40da790cc27843b45b9c255c8d996b43, type: 3}
-    itemValue: 1
+    itemValue: 5
     itemType: 2
     itemWeight: 0
     maxStack: 5
@@ -412,15 +412,17 @@ MonoBehaviour:
   - itemName: Pistol01
     itemID: 23
     itemDesc: 
-    itemIcon: {fileID: 21300000, guid: 435211a123255834d8dbd986692317b8, type: 3}
+    itemIcon: {fileID: 21300000, guid: 5b2b6bc0850198147ba6dd615482d71c, type: 3}
     itemModel: {fileID: 100000, guid: 40da790cc27843b45b9c255c8d996b43, type: 3}
     itemValue: 1
-    itemType: 16
+    itemType: 1
     itemWeight: 0
     maxStack: 1
     indexItemInList: 999
     rarity: 1
-    itemAttributes: []
+    itemAttributes:
+    - attributeName: Damage
+      attributeValue: 40
   - itemName: Machinegun
     itemID: 24
     itemDesc: 

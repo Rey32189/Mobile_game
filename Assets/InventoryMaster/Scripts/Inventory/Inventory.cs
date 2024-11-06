@@ -106,6 +106,7 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
             this.gameObject.SetActive(false); // Если нет, отключаем объект инвентаря
 
         updateItemList(); // Обновляем список предметов в инвентаре
+       
 
         inputManagerDatabase = (InputManager)Resources.Load("InputManager"); // Загружаем менеджер ввода из ресурсов
     }
@@ -290,6 +291,7 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
                 ItemsInInventory.Add(trans.GetChild(0).GetComponent<ItemOnObject>().item);
             }
         }
+        stackableSettings();
     }
 
     public bool characterSystem() // Метод для проверки наличия системы персонажа
@@ -956,6 +958,7 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
             }
 
             updateItemList(); // Обновляем визуальные слоты после загрузки
+            
             Debug.Log($"Inventory '{inventoryName}' loaded from " + inventoryFilePath);
         }
         else
@@ -963,13 +966,6 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
             Debug.LogWarning($"No inventory file found at " + inventoryFilePath);
         }
     }
-
-
-
-    //public void LoadInventory()
-    //{
-    //    StartCoroutine(LoadInventoryCoroutine());
-    //}
 }
 
     

@@ -2,6 +2,11 @@
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
+using TMPro;
+using System.IO;
+using UnityEngine.SceneManagement;
+using static WeaponSwitcher;
 
 public class PlayerInventory : MonoBehaviour
 {
@@ -15,8 +20,10 @@ public class PlayerInventory : MonoBehaviour
     private Inventory craftSystemInventory; // Переменная для хранения инвентаря системы крафта
     private CraftSystem cS; // Переменная для хранения ссылки на систему крафта
     private Inventory mainInventory; // Переменная для хранения основного инвентаря
-    private Inventory characterSystemInventory; // Переменная для хранения инвентаря системы персонажа
+     private Inventory characterSystemInventory; // Переменная для хранения инвентаря системы персонажа
     private Tooltip toolTip; // Переменная для хранения ссылки на подсказку
+            
+    public int itemID;
 
     private InputManager inputManagerDatabase; // Переменная для хранения ссылки на менеджер ввода
 
@@ -29,29 +36,30 @@ public class PlayerInventory : MonoBehaviour
 
     float maxHealth = 100; // Максимальное здоровье игрока
     float maxMana = 100; // Максимальная мана игрока
-    float maxDamage = 0; // Максимальный урон игрока
-    float maxArmor = 0; // Максимальная броня игрока
+    public float maxDamage = 0; // Максимальный урон игрока
+    public float maxArmor = 0; // Максимальная броня игрока
 
     public float currentHealth = 60; // Текущее здоровье игрока
-    float currentMana = 100; // Текущая мана игрока
-    float currentDamage = 0; // Текущий урон игрока
-    float currentArmor = 0; // Текущая броня игрока
+    public float currentMana = 100; // Текущая мана игрока
+    public float currentDamage = 0; // Текущий урон игрока
+    public float currentArmor = 0; // Текущая броня игрока
 
     int normalSize = 3; // Нормальный размер инвентаря
 
     public void OnEnable() // Метод, вызываемый при активации объекта
     {
         // Подписываемся на события инвентаря для обработки экипировки и разэкипировки предметов
-        Inventory.ItemEquip += OnBackpack;
-        Inventory.UnEquipItem += UnEquipBackpack;
+        Inventory.ItemEquip += OnBackpack; // Подписка на событие экипировки предмета, вызывая метод OnBackpack при его срабатывании
+        Inventory.UnEquipItem += UnEquipBackpack; // Подписка на событие разэкипировки предмета, вызывая метод UnEquipBackpack при его срабатывании
 
-        Inventory.ItemEquip += OnGearItem;
-        Inventory.ItemConsumed += OnConsumeItem;
-        Inventory.UnEquipItem += OnUnEquipItem;
+        Inventory.ItemEquip += OnGearItem; // Подписка на событие экипировки предмета, вызывая метод OnGearItem при его срабатывании
+        Inventory.ItemConsumed += OnConsumeItem; // Подписка на событие потребления предмета, вызывая метод OnConsumeItem при его срабатывании
+        Inventory.UnEquipItem += OnUnEquipItem; // Подписка на событие разэкипировки предмета, вызывая метод OnUnEquipItem при его срабатывании
 
-        Inventory.ItemEquip += EquipWeapon;
-        Inventory.UnEquipItem += UnEquipWeapon;
+        Inventory.ItemEquip += EquipWeapon; // Подписка на событие экипировки предмета, вызывая метод EquipWeapon при его срабатывании
+        Inventory.UnEquipItem += UnEquipWeapon; // Подписка на событие разэкипировки предмета, вызывая метод UnEquipWeapon при его срабатывании
     }
+
 
     public void OnDisable() // Метод, вызываемый при деактивации объекта
     {
@@ -66,20 +74,50 @@ public class PlayerInventory : MonoBehaviour
         Inventory.UnEquipItem -= UnEquipWeapon;
         Inventory.ItemEquip -= EquipWeapon;
     }
-
-    void EquipWeapon(Item item) // Метод для экипировки оружия
+    // Вложенный статический класс для обработки ItemID
+    public int GetItemID()
     {
+        return itemID; // Возвращаем текущее значение itemID
+    }
+    public void EquipWeapon(Item item) // Метод для экипировки оружия
+    {
+        Debug.Log("EquipWeapon вызван с Item: " + item);
+
         if (item.itemType == ItemType.Weapon) // Проверяем, является ли предмет оружием
         {
-            // Здесь будет добавление оружия, если оно было разэкипировано
+            Debug.Log("Предмет является оружием.");
+
+            // Устанавливаем itemID в ItemIDHandler только один раз
+            if (item.itemID != 0) // Проверяем, что ItemID не равен 0 
+            {
+                itemID = item.itemID;
+                Debug.Log("ItemID установлен: " + item.itemID);
+            }
+            else
+            {
+                Debug.LogWarning("ItemID равен 0, не устанавливаем оружие.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Предмет не является оружием.");
         }
     }
+
 
     void UnEquipWeapon(Item item) // Метод для разэкипировки оружия
     {
         if (item.itemType == ItemType.Weapon) // Проверяем, является ли предмет оружием
         {
-            // Здесь будет удаление оружия, если оно было разэкипировано
+            for (int i = 0; i < item.itemAttributes.Count; i++) // Проходим по всем атрибутам предмета
+            {
+
+                if (item.itemID != 0) // Проверяем, что ItemID не равен 0 
+                {
+                    itemID = 0; // Получаем ID предмета                                                  
+                    Debug.Log("Найден ItemID: " + itemID);
+                }
+            }
         }
     }
 
@@ -168,18 +206,17 @@ public class PlayerInventory : MonoBehaviour
 
     void Start() // Метод, вызываемый при старте игры
     {
-      
-
+        
         // Код для инициализации текстов и изображений HP и маны (закомментирован)
-        //if (HPMANACanvas != null)
-        //{
-        //    hpText = HPMANACanvas.transform.GetChild(1).GetChild(0).GetComponent<Text>(); // Получаем текст HP
-        //    manaText = HPMANACanvas.transform.GetChild(2).GetChild(0).GetComponent<Text>(); // Получаем текст маны
-        //    hpImage = HPMANACanvas.transform.GetChild(1).GetComponent<Image>(); // Получаем изображение HP
-        //    manaImage = HPMANACanvas.transform.GetChild(1).GetComponent<Image>(); // Получаем изображение маны
-        //    UpdateHPBar(); // Обновляем полосу HP
-        //    UpdateManaBar(); // Обновляем полосу маны
-        //}
+        if (HPMANACanvas != null)
+        {
+            hpText = HPMANACanvas.transform.GetChild(1).GetChild(0).GetComponent<Text>(); // Получаем текст HP
+            manaText = HPMANACanvas.transform.GetChild(2).GetChild(0).GetComponent<Text>(); // Получаем текст маны
+            hpImage = HPMANACanvas.transform.GetChild(1).GetComponent<Image>(); // Получаем изображение HP
+            manaImage = HPMANACanvas.transform.GetChild(2).GetComponent<Image>(); // Получаем изображение маны
+            UpdateHPBar(); // Обновляем полосу HP
+            UpdateManaBar(); // Обновляем полосу маны
+        }
 
         if (inputManagerDatabase == null) // Если менеджер ввода еще не инициализирован
             inputManagerDatabase = (InputManager)Resources.Load("InputManager"); // Загружаем менеджер ввода из ресурсов
@@ -200,19 +237,19 @@ public class PlayerInventory : MonoBehaviour
             craftSystemInventory = craftSystem.GetComponent<Inventory>(); // Получаем компонент инвентаря системы крафта
     }
 
-    //void UpdateHPBar() // Метод для обновления полосы здоровья (закомментирован)
-    //{
-    //    hpText.text = (currentHealth + "/" + maxHealth); // Обновляем текст HP
-    //    float fillAmount = currentHealth / maxHealth; // Рассчитываем заполненность полосы HP
-    //    hpImage.fillAmount = fillAmount; // Устанавливаем заполненность полосы HP
-    //}
+    void UpdateHPBar() // Метод для обновления полосы здоровья (закомментирован)
+    {
+        hpText.text = (currentHealth + "/" + maxHealth); // Обновляем текст HP
+        float fillAmount = currentHealth / maxHealth; // Рассчитываем заполненность полосы HP
+        hpImage.fillAmount = fillAmount; // Устанавливаем заполненность полосы HP
+    }
 
-    //void UpdateManaBar() // Метод для обновления полосы маны (закомментирован)
-    //{
-    //    manaText.text = (currentMana + "/" + maxMana); // Обновляем текст маны
-    //    float fillAmount = currentMana / maxMana; // Рассчитываем заполненность полосы маны
-    //    manaImage.fillAmount = fillAmount; // Устанавливаем заполненность полосы маны
-    //}
+    void UpdateManaBar() // Метод для обновления полосы маны (закомментирован)
+    {
+        manaText.text = (currentMana + "/" + maxMana); // Обновляем текст маны
+        float fillAmount = currentMana / maxMana; // Рассчитываем заполненность полосы маны
+        manaImage.fillAmount = fillAmount; // Устанавливаем заполненность полосы маны
+    }
 
 
     public void OnConsumeItem(Item item) // Метод, вызываемый при потреблении предмета
@@ -248,11 +285,11 @@ public class PlayerInventory : MonoBehaviour
                     currentDamage += item.itemAttributes[i].attributeValue; // Увеличиваем урон
             }
         }
-        //if (HPMANACanvas != null) // Код для обновления полосы HP и маны (закомментирован)
-        //{
-        //    UpdateManaBar(); // Обновляем полосу маны
-        //    UpdateHPBar(); // Обновляем полосу HP
-        //}
+        if (HPMANACanvas != null) // Код для обновления полосы HP и маны (закомментирован)
+        {
+            UpdateManaBar(); // Обновляем полосу маны
+            UpdateHPBar(); // Обновляем полосу HP
+        }
     }
 
     public void OnGearItem(Item item) // Метод, вызываемый при экипировке предмета
@@ -268,11 +305,11 @@ public class PlayerInventory : MonoBehaviour
             if (item.itemAttributes[i].attributeName == "Damage") // Если атрибут - урон
                 maxDamage += item.itemAttributes[i].attributeValue; // Увеличиваем максимальный урон
         }
-        //if (HPMANACanvas != null) // Код для обновления полосы HP и маны (закомментирован)
-        //{
-        //    UpdateManaBar(); // Обновляем полосу маны
-        //    UpdateHPBar(); // Обновляем полосу HP
-        //}
+        if (HPMANACanvas != null) // Код для обновления полосы HP и маны (закомментирован)
+        {
+            UpdateManaBar(); // Обновляем полосу маны
+            UpdateHPBar(); // Обновляем полосу HP
+        }
     }
 
     public void OnUnEquipItem(Item item) // Метод, вызываемый при разэкипировке предмета
@@ -288,42 +325,17 @@ public class PlayerInventory : MonoBehaviour
             if (item.itemAttributes[i].attributeName == "Damage") // Если атрибут - урон
                 maxDamage -= item.itemAttributes[i].attributeValue; // Уменьшаем максимальный урон
         }
-        //if (HPMANACanvas != null) // Код для обновления полосы HP и маны (закомментирован)
-        //{
-        //    UpdateManaBar(); // Обновляем полосу маны
-        //    UpdateHPBar(); // Обновляем полосу HP
-        //}
+        if (HPMANACanvas != null) // Код для обновления полосы HP и маны (закомментирован)
+        {
+            UpdateManaBar(); // Обновляем полосу маны
+            UpdateHPBar(); // Обновляем полосу HP
+        }
     }
 
     // Update is called once per frame
 
     void Update() // Метод, вызываемый каждый кадр
     {
-
-
-
-                  // Сохранение инвентаря при нажатии клавиши "S"
-            //    if (Input.GetKeyDown(KeyCode.S))
-            //     {
-           
-            //     // mainInventory.SaveInventory();
-
-            //     }
-        
-
-            //// Загрузка инвентаря при нажатии клавиши "L"
-            //if (Input.GetKeyDown(KeyCode.L))
-            //{
-            //    mainInventory.LoadInventory();
-            
-            //}
-
-        if (Input.GetKeyDown(KeyCode.V))
-        {
-            mainInventory.ItemsInInventory.Clear();
-            mainInventory.updateItemList();
-        }
-        // ... ваш существующий код ...
 
 
         // Проверяем, нажата ли клавиша для открытия системы персонажа
@@ -371,6 +383,26 @@ public class PlayerInventory : MonoBehaviour
             }
         }
     }
+    public void TakeDamage_player(int damage_player)
+    {
+        currentHealth -= damage_player; // Уменьшаем здоровье на полученный урон
+        UpdateHPBar(); // Обновляем полосу HP
+        //spriteRend.material = matBlink; // когда попали, жизни вычитаются
 
-    
+        //if (health <= 0) // когда жизни опускается до 0 объект разрушается
+        //{
+        //    Die();
+        //}
+        //else
+        //{
+        //    Invoke("ResetMaterial", 0.5f); //если не убили, сработает функия через 0.2 секунды
+        //}
+        if (currentHealth < 0) // Проверяем, чтобы здоровье не стало отрицательным
+        {
+            currentHealth = 0; // Устанавливаем здоровье в 0, если оно меньше 0
+
+        }
+    }
+
+
 }
