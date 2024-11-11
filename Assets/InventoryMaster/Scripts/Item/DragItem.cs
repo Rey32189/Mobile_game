@@ -1,804 +1,628 @@
-﻿using UnityEngine; // Подключение пространства имен Unity для работы с игровыми объектами и компонентами
-using System.Collections; // Подключение пространства имен для работы с коллекциями и IEnumerator
-using UnityEngine.UI; // Подключение пространства имен для работы с UI элементами
-using UnityEngine.EventSystems; // Подключение пространства имен для работы с событиями ввода
+﻿using UnityEngine; // Подключение пространства имен UnityEngine, которое содержит основные классы и функции для работы с Unity
+using System.Collections; // Подключение пространства имен для работы с коллекциями и коллекциями данных
+using UnityEngine.UI; // Подключение пространства имен для работы с элементами пользовательского интерфейса (UI) в Unity
+using UnityEngine.EventSystems; // Подключение пространства имен для работы с событиями ввода (например, клики мыши, касания)
 
-// Класс DragItem реализует интерфейсы для обработки перетаскивания и взаимодействия с мышью
-public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDragHandler
+public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDragHandler // Определение класса DragItem, который наследует MonoBehaviour и реализует интерфейсы для обработки событий перетаскивания
 {
-    private Vector2 pointerOffset; // Смещение указателя мыши относительно позиции предмета
-    private RectTransform rectTransform; // Ссылка на RectTransform текущего объекта (предмета)
-    private RectTransform rectTransformSlot; // Ссылка на RectTransform слота, в который перетаскивается предмет
-    private CanvasGroup canvasGroup; // Группа канваса для управления взаимодействием с объектом
-    private GameObject oldSlot; // Ссылка на предыдущий слот, из которого был перетянут предмет
-    private Inventory inventory; // Ссылка на инвентарь, к которому принадлежит предмет
-    private Transform draggedItemBox; // Ссылка на контейнер для перетаскиваемого предмета
+    private Vector2 pointerOffset; // Хранит смещение указателя от центра объекта при перетаскивании
+    private RectTransform rectTransform; // Ссылка на RectTransform текущего объекта для управления его положением
+    private RectTransform rectTransformSlot; // Ссылка на RectTransform слота, в который будет помещен перетаскиваемый объект
+    private CanvasGroup canvasGroup; // Ссылка на CanvasGroup для управления видимостью и взаимодействием с объектом
+    private GameObject oldSlot; // Ссылка на предыдущий слот, в котором находился объект
+    private Inventory inventory; // Ссылка на компонент Inventory, который управляет инвентарем
+    private Transform draggedItemBox; // Ссылка на объект, в который будет помещен перетаскиваемый элемент
 
-    // Делегат для обновления списка предметов в инвентаре
-    public delegate void ItemDelegate();
-    public static event ItemDelegate updateInventoryList; // Статическое событие для обновления инвентаря
-
-    void Start()
+    public delegate void ItemDelegate(); // Определение делегата для обновления списка инвентаря
+    public static event ItemDelegate updateInventoryList; // Объявление статического события, которое будет вызываться для обновления списка инвентаря
+    void Start() // Метод, который вызывается при инициализации объекта
     {
-        // Получение ссылки на RectTransform текущего объекта
-        rectTransform = GetComponent<RectTransform>();
-        // Получение ссылки на CanvasGroup для управления взаимодействием
-        canvasGroup = GetComponent<CanvasGroup>();
-        // Поиск RectTransform объекта, который будет использоваться для перетаскивания
-        rectTransformSlot = GameObject.FindGameObjectWithTag("DraggingItem").GetComponent<RectTransform>();
-        // Получение ссылки на инвентарь из родительских объектов
-        inventory = transform.parent.parent.parent.GetComponent<Inventory>();
-        // Получение ссылки на контейнер для перетаскиваемого предмета
-        draggedItemBox = GameObject.FindGameObjectWithTag("DraggingItem").transform;
+        rectTransform = GetComponent<RectTransform>(); // Получение компонента RectTransform текущего объекта
+        canvasGroup = GetComponent<CanvasGroup>(); // Получение компонента CanvasGroup текущего объекта
+        rectTransformSlot = GameObject.FindGameObjectWithTag("DraggingItem").GetComponent<RectTransform>(); // Поиск объекта с тегом "DraggingItem" и получение его RectTransform
+        inventory = transform.parent.parent.parent.GetComponent<Inventory>(); // Получение компонента Inventory из родительского объекта
+        draggedItemBox = GameObject.FindGameObjectWithTag("DraggingItem").transform; // Получение трансформа объекта с тегом "DraggingItem"
     }
 
-    // Метод, вызываемый при перетаскивании предмета
-    public void OnDrag(PointerEventData data)
+    public void OnDrag(PointerEventData data) // Метод, который вызывается при перетаскивании объекта
     {
-        // Проверка, существует ли RectTransform
-        if (rectTransform == null)
+        if (rectTransform == null) // Проверка, инициализирован ли RectTransform
             return; // Если нет, выход из метода
 
-        // Проверка, что нажата левая кнопка мыши и предмет не находится в слоте крафта
-        if (data.button == PointerEventData.InputButton.Left && transform.parent.GetComponent<CraftResultSlot>() == null)
+        if (data.button == PointerEventData.InputButton.Left && transform.parent.GetComponent<CraftResultSlot>() == null) // Проверка, что нажата левая кнопка мыши и объект не находится в слоте для результата крафта
         {
-            // Перемещение предмета на верхний уровень и установка родителя на контейнер для перетаскиваемого предмета
-            rectTransform.SetAsLastSibling();
-            transform.SetParent(draggedItemBox);
+            rectTransform.SetAsLastSibling(); // Перемещение RectTransform в конец списка дочерних объектов
+            transform.SetParent(draggedItemBox); // Установка родителем для объекта - draggedItemBox
             Vector2 localPointerPosition; // Переменная для хранения локальной позиции указателя
-            canvasGroup.blocksRaycasts = false; // Отключение блокировки взаимодействия с объектом
-            // Преобразование экранной точки в локальную точку относительно RectTransform слота
-            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransformSlot, Input.mousePosition, data.pressEventCamera, out localPointerPosition))
+            canvasGroup.blocksRaycasts = false; // Отключение блокировки лучей для взаимодействия с другими элементами UI
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransformSlot, Input.mousePosition, data.pressEventCamera, out localPointerPosition)) // Преобразование координат экрана в локальные координаты RectTransform слота
             {
-                // Установка локальной позиции RectTransform на основе позиции указателя
-                rectTransform.localPosition = localPointerPosition - pointerOffset;
-                // Удаление дубликата предмета, если он существует
-                if (transform.GetComponent<ConsumeItem>().duplication != null)
-                    Destroy(transform.GetComponent<ConsumeItem>().duplication);
+                rectTransform.localPosition = localPointerPosition - pointerOffset; // Установка локальной позиции RectTransform с учетом смещения указателя
+                if (transform.GetComponent<ConsumeItem>().duplication != null) // Проверка на наличие дубликата у ConsumeItem
+                    Destroy(transform.GetComponent<ConsumeItem>().duplication); // Уничтожение дубликата, если он существует
             }
         }
 
-        // Обновление списка предметов в инвентаре
-        inventory.OnUpdateItemList();
+        inventory.OnUpdateItemList(); // Вызов метода обновления списка предметов в инвентаре
     }
 
-    // Метод, вызываемый при нажатии на предмет
-    public void OnPointerDown(PointerEventData data)
+
+
+
+    public void OnPointerDown(PointerEventData data) // Метод, который вызывается при нажатии указателя на объект
     {
-        // Проверка, что нажата левая кнопка мыши
-        if (data.button == PointerEventData.InputButton.Left)
+        if (data.button == PointerEventData.InputButton.Left) // Проверка, что нажата левая кнопка мыши
         {
-            // Получение смещения указателя мыши относительно RectTransform предмета
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, data.position, data.pressEventCamera, out pointerOffset);
-            // Сохранение ссылки на старый слот
-            oldSlot = transform.parent.gameObject;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, data.position, data.pressEventCamera, out pointerOffset); // Преобразование координат экрана в локальные координаты прямоугольника
+            oldSlot = transform.parent.gameObject; // Сохранение ссылки на родительский объект (слот инвентаря)
         }
-        // Вызов события обновления списка инвентаря, если есть подписчики
-        if (updateInventoryList != null)
-            updateInventoryList();
+        if (updateInventoryList != null) // Проверка, что событие обновления инвентаря не равно null
+            updateInventoryList(); // Вызов события обновления инвентаря
     }
 
-    // Метод для создания дубликата предмета
-    public void createDuplication(GameObject Item)
+    public void createDuplication(GameObject Item) // Метод для создания дубликата предмета
     {
-        // Получение компонента ItemOnObject и извлечение объекта Item из него
-        Item item = Item.GetComponent<ItemOnObject>().item;
-        // Поиск объекта с тегом "MainInventory" и добавление предмета в инвентарь, получая дубликат
-        GameObject duplication = GameObject.FindGameObjectWithTag("MainInventory").GetComponent<Inventory>().addItemToInventory(item.itemID, item.itemValue);
-        // Настройка параметров стеков для нового дубликата предмета
-        duplication.transform.parent.parent.parent.GetComponent<Inventory>().stackableSettings();
-        // Сохранение ссылки на дубликат в компоненте ConsumeItem оригинального предмета
-        Item.GetComponent<ConsumeItem>().duplication = duplication;
-        // Сохранение ссылки на оригинальный предмет в компоненте ConsumeItem дубликата
-        duplication.GetComponent<ConsumeItem>().duplication = Item;
+        Item item = Item.GetComponent<ItemOnObject>().item; // Получение компонента ItemOnObject и извлечение информации о предмете
+        GameObject duplication = GameObject.FindGameObjectWithTag("MainInventory").GetComponent<Inventory>().addItemToInventory(item.itemID, item.itemValue); // Добавление предмета в инвентарь и сохранение ссылки на дубликат
+        duplication.transform.parent.parent.parent.GetComponent<Inventory>().stackableSettings(); // Настройка свойств стекуемых предметов в инвентаре
+        Item.GetComponent<ConsumeItem>().duplication = duplication; // Установка ссылки на дубликат в оригинальном предмете
+        duplication.GetComponent<ConsumeItem>().duplication = Item; // Установка ссылки на оригинал в дубликате
     }
 
-    // Метод, вызываемый при завершении перетаскивания предмета
-    public void OnEndDrag(PointerEventData data)
+
+    public void OnEndDrag(PointerEventData data) // Метод, который вызывается, когда пользователь завершает перетаскивание объекта.
     {
-        // Проверка, что была нажата левая кнопка мыши
-        if (data.button == PointerEventData.InputButton.Left)
+        if (data.button == PointerEventData.InputButton.Left) // Проверка, что была нажата левая кнопка мыши.
         {
-            // Включение блокировки взаимодействия с объектом
-            canvasGroup.blocksRaycasts = true;
-            Transform newSlot = null; // Переменная для хранения нового слота
+            canvasGroup.blocksRaycasts = true; // Включение блокировки взаимодействия с другими элементами интерфейса.
+            Transform newSlot = null; // Объявление переменной для хранения нового слота, в который будет перемещен предмет.
+            if (data.pointerEnter != null) // Проверка, что указатель на что-то указывает.
+                newSlot = data.pointerEnter.transform; // Присваивание нового слота на основе объекта, на который указывает указатель.
 
-            // Если указатель мыши находится над объектом, сохраняем ссылку на новый слот
-            if (data.pointerEnter != null)
-                newSlot = data.pointerEnter.transform;
-
-            // Проверка, что новый слот не равен null
-            if (newSlot != null)
+            if (newSlot != null) // Проверка, что новый слот был найден.
             {
-                // Получение игровых объектов и RectTransform для предметов
-                GameObject firstItemGameObject = this.gameObject; // Игровой объект текущего предмета
-                GameObject secondItemGameObject = newSlot.parent.gameObject; // Игровой объект нового слота
-                RectTransform firstItemRectTransform = this.gameObject.GetComponent<RectTransform>(); // RectTransform текущего предмета
-                RectTransform secondItemRectTransform = newSlot.parent.GetComponent<RectTransform>(); // RectTransform нового слота
-                Item firstItem = rectTransform.GetComponent<ItemOnObject>().item; // Получение предмета из текущего RectTransform
-                Item secondItem = new Item(); // Создание нового экземпляра Item
-                                              // Если новый слот содержит компонент ItemOnObject, получаем его предмет
-                if (newSlot.parent.GetComponent<ItemOnObject>() != null)
-                    secondItem = newSlot.parent.GetComponent<ItemOnObject>().item;
+                // Получение предметов из слотов, GameObjects и RectTransform
+                GameObject firstItemGameObject = this.gameObject; // Ссылка на текущий объект (предмет, который перетаскивается).
+                GameObject secondItemGameObject = newSlot.parent.gameObject; // Ссылка на объект второго слота (куда будет перемещен предмет).
+                RectTransform firstItemRectTransform = this.gameObject.GetComponent<RectTransform>(); // Получение RectTransform текущего предмета.
+                RectTransform secondItemRectTransform = newSlot.parent.GetComponent<RectTransform>(); // Получение RectTransform второго предмета.
+                Item firstItem = rectTransform.GetComponent<ItemOnObject>().item; // Получение информации о первом предмете.
+                Item secondItem = new Item(); // Создание нового экземпляра второго предмета.
 
-                // Получение информации о двух предметах
-                bool sameItem = firstItem.itemName == secondItem.itemName; // Проверка, одинаковые ли имена предметов
-                bool sameItemRerferenced = firstItem.Equals(secondItem); // Проверка, ссылаются ли оба предмета на один и тот же объект
-                bool secondItemStack = false; // Флаг для проверки, можно ли стекать второй предмет
-                bool firstItemStack = false; // Флаг для проверки, можно ли стекать первый предмет
-                                             // Если имена предметов одинаковые, проверяем, можно ли их стекать
-                if (sameItem)
+
+                if (newSlot.parent.GetComponent<ItemOnObject>() != null) // Проверка, есть ли компонент ItemOnObject у второго слота.
+                    secondItem = newSlot.parent.GetComponent<ItemOnObject>().item; // Получение информации о втором предмете, если он существует.
+
+                // Получить информацию о двух предметах
+                bool sameItem = firstItem.itemName == secondItem.itemName; // Проверка, имеют ли предметы одинаковое имя.
+                bool sameItemRerferenced = firstItem.Equals(secondItem); // Проверка, ссылаются ли оба предмета на один и тот же объект.
+                bool secondItemStack = false; // Переменная для отслеживания, может ли второй предмет быть сложен.
+                bool firstItemStack = false; // Переменная для отслеживания, может ли первый предмет быть сложен.
+
+                // Проверка, является ли новый слот инвентарем боеприпасов
+                bool isAmmoInventory = newSlot.parent.parent.CompareTag("AmmoInventory"); // Проверяем тег у родителя родителя
+
+                if (isAmmoInventory && firstItem.itemType != ItemType.Ammo)
                 {
-                    firstItemStack = firstItem.itemValue < firstItem.maxStack; // Проверка, можно ли стекать первый предмет
-                    secondItemStack = secondItem.itemValue < secondItem.maxStack; // Проверка, можно ли стекать второй предмет
+                    // Если это инвентарь боеприпасов, но предмет не является боеприпасом, возвращаем
+                    firstItemGameObject.transform.SetParent(oldSlot.transform);
+                    firstItemRectTransform.localPosition = Vector3.zero;
+                    return;
                 }
 
-                // Получение объекта инвентаря из RectTransform второго предмета
-                GameObject Inventory = secondItemRectTransform.parent.gameObject;
-                // Если инвентарь имеет тег "Slot", получаем родительский объект
-                if (Inventory.tag == "Slot")
-                    Inventory = secondItemRectTransform.parent.parent.parent.gameObject;
 
-                // Если инвентарь имеет тег "Slot", получаем родительский объект еще раз
-                if (Inventory.tag.Equals("Slot"))
-                    Inventory = Inventory.transform.parent.parent.gameObject;
 
-                // Проверка, что объект Inventory не является горячей панелью, системой экипировки или системой крафта
-                if (Inventory.GetComponent<Hotbar>() == null && Inventory.GetComponent<EquipmentSystem>() == null && Inventory.GetComponent<CraftSystem>() == null)
-                {
-                    // Проверка, что новый слот или его родительский слот имеют тег "ResultSlot", чтобы предотвратить прикрепление предметов к слоту результата системы крафта
-                    if (newSlot.transform.parent.tag == "ResultSlot" || newSlot.transform.tag == "ResultSlot" || newSlot.transform.parent.parent.tag == "ResultSlot")
+
+
+
+
+                if (sameItem) // Если предметы одинаковые.
                     {
-                        // Возврат предмета в старый слот, если он пытается прикрепиться к слоту результата
-                        firstItemGameObject.transform.SetParent(oldSlot.transform);
-                        // Установка локальной позиции предмета в ноль, чтобы он находился в центре старого слота
-                        firstItemRectTransform.localPosition = Vector3.zero;
+                        firstItemStack = firstItem.itemValue < firstItem.maxStack; // Проверка, можно ли сложить первый предмет.
+                        secondItemStack = secondItem.itemValue < secondItem.maxStack; // Проверка, можно ли сложить второй предмет.
                     }
-                    else
+
+                    GameObject Inventory = secondItemRectTransform.parent.gameObject; // Получение родительского объекта второго предмета как инвентаря.
+                    if (Inventory.tag == "Slot") // Проверка, является ли родительский объект слотом.
+                        Inventory = secondItemRectTransform.parent.parent.parent.gameObject; // Переход к родительскому инвентарю, если это слот.
+
+                    if (Inventory.tag.Equals("Slot")) // Проверка, является ли инвентарь слотом.
+                        Inventory = Inventory.transform.parent.parent.gameObject; // Переход к родительскому инвентарю, если это слот.
+
+                    // перетаскивание в инвентаре".    
+                    if (Inventory.GetComponent<Hotbar>() == null && Inventory.GetComponent<EquipmentSystem>() == null && Inventory.GetComponent<CraftSystem>() == null) // Проверка, что инвентарь не является горячей панелью, системой оборудования или системой крафта.
                     {
-                        // Получение количества дочерних объектов в родительском слоте нового слота
-                        int newSlotChildCount = newSlot.transform.parent.childCount;
-                        // Проверка, есть ли в новом слоте предмет (дочерний объект с тегом "ItemIcon")
-                        bool isOnSlot = newSlot.transform.parent.GetChild(0).tag == "ItemIcon";
-                        // Проверка, перетаскивается ли предмет на слот, где уже есть предмет
-                        if (newSlotChildCount != 0 && isOnSlot)
+                        //вы не можете прикреплять предметы к результирующему слоту системы крафта
+                        if (newSlot.transform.parent.tag == "ResultSlot" || newSlot.transform.tag == "ResultSlot" || newSlot.transform.parent.parent.tag == "ResultSlot") // Проверка, является ли новый слот слотом результата крафта.
                         {
-                            // Переменная для проверки, помещается ли предмет в другой предмет
-                            bool fitsIntoStack = false;
-                            // Если предметы одинаковые, проверяем, можно ли их объединить в стек
-                            if (sameItem)
-                                fitsIntoStack = (firstItem.itemValue + secondItem.itemValue) <= firstItem.maxStack;
+                            firstItemGameObject.transform.SetParent(oldSlot.transform); // Возвращение предмета обратно в старый слот, если он был перемещен в слот результата.
+                            firstItemRectTransform.localPosition = Vector3.zero; // Сброс позиции предмета к началу относительно старого слота.
+                        }
 
-                            // Если инвентарь поддерживает стекание и оба предмета одинаковые, проверяем, что стеки не полные
-                            if (inventory.stackable && sameItem && firstItemStack && secondItemStack)
+
+                        else // Начало блока else, который выполняется, если условие выше не выполнено
+                        {
+                            int newSlotChildCount = newSlot.transform.parent.childCount; // Получаем количество дочерних объектов у родителя нового слота
+                            bool isOnSlot = newSlot.transform.parent.GetChild(0).tag == "ItemIcon"; // Проверяем, есть ли уже предмет в новом слоте
+                                                                                                    // перетаскивание на слот, где уже есть предмет
+                            if (newSlotChildCount != 0 && isOnSlot) // Если в новом слоте есть предмет
                             {
-                                // Если предмет помещается в другой предмет и они не ссылаются на один и тот же объект
-                                if (fitsIntoStack && !sameItemRerferenced)
-                                {
-                                    // Обновляем количество предметов во втором предмете
-                                    secondItem.itemValue = firstItem.itemValue + secondItem.itemValue;
-                                    // Перемещаем игровой объект второго предмета в родительский слот нового слота
-                                    secondItemGameObject.transform.SetParent(newSlot.parent.parent);
-                                    // Уничтожаем первый предмет, так как он был объединен
-                                    Destroy(firstItemGameObject);
-                                    // Устанавливаем локальную позицию второго предмета в ноль, чтобы он находился в центре нового слота
-                                    secondItemRectTransform.localPosition = Vector3.zero;
+                                // проверяем, помещается ли один предмет в другой
+                                bool fitsIntoStack = false; // Переменная для проверки, помещается ли один предмет в другой
+                                if (sameItem) // Если предметы одинаковые
+                                    fitsIntoStack = (firstItem.itemValue + secondItem.itemValue) <= firstItem.maxStack; // Проверяем, помещаются ли они в один стек
 
-                                    // Если у второго предмета есть дубликат, обновляем его значение
-                                    if (secondItemGameObject.GetComponent<ConsumeItem>().duplication != null)
+                                // если предмет стекуемый, проверяем, что стеки первого и второго предметов не полные и что они одинаковые
+                                if (inventory.stackable && sameItem && firstItemStack && secondItemStack) // Если инвентарь позволяет стекать предметы и оба предмета одинаковы
+                                {
+                                    // если предмет не помещается в другой предмет
+                                    if (fitsIntoStack && !sameItemRerferenced) // Если предметы помещаются в один стек и ссылки на них разные
                                     {
-                                        // Получаем ссылку на дубликат
-                                        GameObject dup = secondItemGameObject.GetComponent<ConsumeItem>().duplication;
-                                        // Обновляем значение предмета дубликата
-                                        dup.GetComponent<ItemOnObject>().item.itemValue = secondItem.itemValue;
-                                        // Применяем настройки стеков к дубликату
-                                        dup.GetComponent<SplitItem>().inv.stackableSettings();
-                                        // Обновляем список предметов в инвентаре
-                                        dup.transform.parent.parent.parent.GetComponent<Inventory>().updateItemList();
+                                        secondItem.itemValue = firstItem.itemValue + secondItem.itemValue; // Обновляем количество предметов во втором предмете
+                                        secondItemGameObject.transform.SetParent(newSlot.parent.parent); // Устанавливаем второй предмет в родительский объект нового слота
+                                        Destroy(firstItemGameObject); // Удаляем первый предмет
+                                        secondItemRectTransform.localPosition = Vector3.zero; // Устанавливаем позицию второго предмета в ноль
+                                        if (secondItemGameObject.GetComponent<ConsumeItem>().duplication != null) // Проверяем, есть ли дубликат у второго предмета
+                                        {
+                                            GameObject dup = secondItemGameObject.GetComponent<ConsumeItem>().duplication; // Получаем объект дубликата
+                                            dup.GetComponent<ItemOnObject>().item.itemValue = secondItem.itemValue; // Обновляем значение предмета в дубликате
+                                            dup.GetComponent<SplitItem>().inv.stackableSettings(); // Применяем настройки стекания к инвентарю дубликата
+                                            dup.transform.parent.parent.parent.GetComponent<Inventory>().updateItemList(); // Обновляем список предметов в инвентаре дубликата
+                                        }
+                                    }
+                                    else // Если предмет не помещается в другой предмет
+                                    {
+                                        // создаем остаток предмета
+                                        int rest = (firstItem.itemValue + secondItem.itemValue) % firstItem.maxStack; // Вычисляем остаток предметов
+
+                                        // заполняем другой стек и добавляем остаток в другой стек 
+                                        if (!fitsIntoStack && rest > 0) // Если предметы не помещаются в один стек и остаток больше нуля
+                                        {
+                                            firstItem.itemValue = firstItem.maxStack; // Устанавливаем максимальное значение для первого предмета
+                                            secondItem.itemValue = rest; // Устанавливаем остаток для второго предмета
+
+                                            firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent); // Перемещаем первый предмет в родительский объект второго
+                                            secondItemGameObject.transform.SetParent(oldSlot.transform); // Возвращаем второй предмет в старый слот
+
+                                            firstItemRectTransform.localPosition = Vector3.zero; // Устанавливаем позицию первого предмета в ноль
+                                            secondItemRectTransform.localPosition = Vector3.zero; // Устанавливаем позицию второго предмета в ноль
+                                        }
+                                    }
+                                }
+                                // если не помещается // Конец блока, обрабатывающего случай, когда предметы не помещаются в один стек
+                                else
+                                {
+                                    // создает остаток предмета
+                                    int rest = 0; // инициализация переменной остатка
+                                    if (sameItem) // если предметы одинаковые
+                                        rest = (firstItem.itemValue + secondItem.itemValue) % firstItem.maxStack; // вычисляем остаток от сложения значений предметов
+
+                                    // fill up the other stack and adds the rest to the other stack // заполняет другой стек и добавляет остаток в другой стек
+                                    if (!fitsIntoStack && rest > 0) // если не помещается в стек и есть остаток
+                                    {
+                                        secondItem.itemValue = firstItem.maxStack; // устанавливаем максимальное значение для второго предмета
+                                        firstItem.itemValue = rest; // обновляем значение первого предмета на остаток
+
+                                        firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent); // перемещаем первый предмет под родитель второго предмета
+                                        secondItemGameObject.transform.SetParent(oldSlot.transform); // перемещаем второй предмет обратно в старый слот
+
+                                        firstItemRectTransform.localPosition = Vector3.zero; // устанавливаем локальную позицию первого предмета
+                                        secondItemRectTransform.localPosition = Vector3.zero; // устанавливаем локальную позицию второго предмета
+                                    }
+                                    // если предметы разные или стек полон, они меняются местами
+                                    else if (!fitsIntoStack && rest == 0) // если не помещается в стек и остатка нет
+                                    {
+                                        // если вы перетаскиваете предмет из системы экипировки в инвентарь и пытаетесь поменять его с предметом того же типа
+                                        if (oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null && firstItem.itemType == secondItem.itemType) // если старый слот принадлежит системе экипировки и типы предметов совпадают
+                                        {
+                                            newSlot.transform.parent.parent.parent.parent.GetComponent<Inventory>().UnEquipItem1(firstItem); // снимаем первый предмет с экипировки
+                                            oldSlot.transform.parent.parent.GetComponent<Inventory>().EquiptItem(secondItem); // одеваем второй предмет на экипировку
+
+                                            firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent); // перемещаем первый предмет под родитель второго предмета
+                                            secondItemGameObject.transform.SetParent(oldSlot.transform); // перемещаем второй предмет обратно в старый слот
+                                            secondItemRectTransform.localPosition = Vector3.zero; // устанавливаем локальную позицию второго предмета
+                                            firstItemRectTransform.localPosition = Vector3.zero; // устанавливаем локальную позицию первого предмета
+
+                                            if (secondItemGameObject.GetComponent<ConsumeItem>().duplication != null) // если у второго предмета есть дубликат
+                                                Destroy(secondItemGameObject.GetComponent<ConsumeItem>().duplication); // уничтожаем дубликат второго предмета
+                                        }
+                                        // если вы перетаскиваете предмет из системы экипировки в инвентарь и они не одного типа, они не меняются местами.
+                                        else if (oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null && firstItem.itemType != secondItem.itemType) // если старый слот принадлежит системе экипировки и типы предметов не совпадают
+                                        {
+                                            firstItemGameObject.transform.SetParent(oldSlot.transform); // перемещаем первый предмет обратно в старый слот
+                                            firstItemRectTransform.localPosition = Vector3.zero; // устанавливаем локальную позицию первого предмета
+                                        }
+                                        // swapping for the rest of the inventorys // обмен для остальных предметов в инвентаре
+                                        else if (oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() == null) // если старый слот не принадлежит системе экипировки
+                                        {
+                                            firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent); // перемещаем первый предмет под родитель второго предмета
+                                            secondItemGameObject.transform.SetParent(oldSlot.transform); // перемещаем второй предмет обратно в старый слот
+                                            secondItemRectTransform.localPosition = Vector3.zero; // устанавливаем локальную позицию второго предмета
+                                            firstItemRectTransform.localPosition = Vector3.zero; // устанавливаем локальную позицию первого предмета
+                                        }
+                                    }
+                                }
+                            }
+
+                            //empty slot // Пустой слот
+                            else // Иначе
+                            {
+                                if (newSlot.tag != "Slot" && newSlot.tag != "ItemIcon") // Если новый слот не является слотом и не является иконкой предмета
+                                {
+                                    firstItemGameObject.transform.SetParent(oldSlot.transform); // Устанавливаем родителем первого предмета старый слот
+                                    firstItemRectTransform.localPosition = Vector3.zero; // Устанавливаем локальную позицию первого предмета в ноль
+                                }
+                                else // Иначе
+                                {
+                                    firstItemGameObject.transform.SetParent(newSlot.transform); // Устанавливаем родителем первого предмета новый слот
+                                    firstItemRectTransform.localPosition = Vector3.zero; // Устанавливаем локальную позицию первого предмета в ноль
+
+                                    if (newSlot.transform.parent.parent.GetComponent<EquipmentSystem>() == null && oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null) // Если новый слот не находится в системе экипировки, а старый находится
+                                        oldSlot.transform.parent.parent.GetComponent<Inventory>().UnEquipItem1(firstItem); // Снимаем экипировку с первого предмета в старом слоте
+                                }
+                            }
+                        }
+                    }
+
+
+                    // перетаскивание в горячую панель
+                    if (Inventory.GetComponent<Hotbar>() != null) // проверка, есть ли компонент Hotbar в инвентаре
+                    {
+                        int newSlotChildCount = newSlot.transform.parent.childCount; // получаем количество дочерних элементов нового слота
+                        bool isOnSlot = newSlot.transform.parent.GetChild(0).tag == "ItemIcon"; // проверяем, есть ли предмет в новом слоте
+                                                                                                // перетаскивание на слот, где уже есть предмет
+                        if (newSlotChildCount != 0 && isOnSlot) // если в слоте есть предмет
+                        {
+                            // проверяем, помещается ли предмет в другой предмет
+                            bool fitsIntoStack = false; // инициализируем переменную для проверки возможности стекания
+                            if (sameItem) // если предметы одинаковые
+                                fitsIntoStack = (firstItem.itemValue + secondItem.itemValue) <= firstItem.maxStack; // проверяем, помещаются ли предметы в стек по максимальному количеству
+
+                            // if the item is stackable checking if the first item stack and second item stack is not full and check if they are the same items
+                            if (inventory.stackable && sameItem && firstItemStack && secondItemStack) // если предметы стекуемые и оба стека не полные
+                            {
+                                // если предмет не помещается в другой предмет
+                                if (fitsIntoStack && !sameItemRerferenced) // если помещается в стек и это не тот же предмет
+                                {
+                                    secondItem.itemValue = firstItem.itemValue + secondItem.itemValue; // обновляем количество предметов во втором предмете
+                                    secondItemGameObject.transform.SetParent(newSlot.parent.parent); // устанавливаем родителя для второго предмета
+                                    Destroy(firstItemGameObject); // уничтожаем первый предмет
+                                    secondItemRectTransform.localPosition = Vector3.zero; // сбрасываем позицию второго предмета
+                                    if (secondItemGameObject.GetComponent<ConsumeItem>().duplication != null) // проверяем, есть ли дубликат у второго предмета
+                                    {
+                                        GameObject dup = secondItemGameObject.GetComponent<ConsumeItem>().duplication; // получаем дубликат
+                                        dup.GetComponent<ItemOnObject>().item.itemValue = secondItem.itemValue; // обновляем значение предмета дубликата
+                                        Inventory.GetComponent<Inventory>().stackableSettings(); // обновляем настройки стекуемых предметов в инвентаре
+                                        dup.transform.parent.parent.parent.GetComponent<Inventory>().updateItemList(); // обновляем список предметов в инвентаре
                                     }
                                 }
 
                                 else
                                 {
-                                    // Создаем остаток от объединения предметов, который не помещается в стек
+                                    // создаёт остаток предмета
                                     int rest = (firstItem.itemValue + secondItem.itemValue) % firstItem.maxStack;
 
-                                    // Проверяем, помещается ли предмет в стек, и есть ли остаток
+                                    // заполняет другой стек и добавляет остаток в другой стек
                                     if (!fitsIntoStack && rest > 0)
                                     {
-                                        // Заполняем первый предмет до максимума
-                                        firstItem.itemValue = firstItem.maxStack;
-                                        // Устанавливаем значение второго предмета равным остатку
-                                        secondItem.itemValue = rest;
+                                        firstItem.itemValue = firstItem.maxStack; // устанавливает значение первого предмета в максимальное количество
+                                        secondItem.itemValue = rest; // устанавливает остаток для второго предмета
 
-                                        // Перемещаем первый предмет в родительский слот второго предмета
-                                        firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent);
-                                        // Перемещаем второй предмет в старый слот
-                                        secondItemGameObject.transform.SetParent(oldSlot.transform);
+                                        firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent); // перемещает объект первого предмета в родительский объект второго предмета
+                                        secondItemGameObject.transform.SetParent(oldSlot.transform); // перемещает объект второго предмета в старый слот
 
-                                        // Устанавливаем локальные позиции обоих предметов в ноль, чтобы они находились в центре своих слотов
-                                        firstItemRectTransform.localPosition = Vector3.zero;
-                                        secondItemRectTransform.localPosition = Vector3.zero;
+                                        firstItemRectTransform.localPosition = Vector3.zero; // устанавливает локальную позицию первого предмета в ноль
+                                        secondItemRectTransform.localPosition = Vector3.zero; // устанавливает локальную позицию второго предмета в ноль
+
+                                        createDuplication(this.gameObject); // создаёт дубликат текущего объекта
+                                        secondItemGameObject.GetComponent<ConsumeItem>().duplication.GetComponent<ItemOnObject>().item = secondItem; // присваивает второй предмет дубликату
+                                        secondItemGameObject.GetComponent<SplitItem>().inv.stackableSettings(); // обновляет настройки стекуемости инвентаря
+                                    }
+                                }
+
+                            }
+                            // если не помещается
+                            else
+                            {
+                                // создаёт остаток предмета
+                                int rest = 0; // инициализирует остаток как 0
+                                if (sameItem) // если предметы одинаковые
+                                    rest = (firstItem.itemValue + secondItem.itemValue) % firstItem.maxStack; // вычисляет остаток
+
+                                bool fromEquip = oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null; // проверяет, является ли родитель старого слота системой экипировки
+
+                                // заполняет другой стек и добавляет остаток в другой стек
+                                if (!fitsIntoStack && rest > 0)
+                                {
+                                    secondItem.itemValue = firstItem.maxStack; // устанавливает значение второго предмета в максимальное количество
+                                    firstItem.itemValue = rest; // устанавливает остаток для первого предмета
+
+                                    createDuplication(this.gameObject); // создаёт дубликат текущего объекта
+
+                                    firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent); // перемещает объект первого предмета в родительский объект второго предмета
+                                    secondItemGameObject.transform.SetParent(oldSlot.transform); // перемещает объект второго предмета в старый слот
+
+                                    firstItemRectTransform.localPosition = Vector3.zero; // устанавливает локальную позицию первого предмета в ноль
+                                    secondItemRectTransform.localPosition = Vector3.zero; // устанавливает локальную позицию второго предмета в ноль
+                                }
+
+                                else if (!fitsIntoStack && rest == 0) // если предметы не помещаются в стек и остатка нет
+                                {
+                                    if (!fromEquip) // если предмет не из экипировки
+                                    {
+                                        firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent); // перемещаем первый предмет в родитель второго предмета
+                                        secondItemGameObject.transform.SetParent(oldSlot.transform); // перемещаем второй предмет в старый слот
+                                        secondItemRectTransform.localPosition = Vector3.zero; // сбрасываем локальную позицию второго предмета
+                                        firstItemRectTransform.localPosition = Vector3.zero; // сбрасываем локальную позицию первого предмета
+
+                                        if (oldSlot.transform.parent.parent.gameObject.Equals(GameObject.FindGameObjectWithTag("MainInventory"))) // если старый слот в главном инвентаре
+                                        {
+                                            Destroy(secondItemGameObject.GetComponent<ConsumeItem>().duplication); // уничтожаем дубликат второго предмета
+                                            createDuplication(firstItemGameObject); // создаем дубликат первого предмета
+                                        }
+                                        else // если это не главный инвентарь
+                                        {
+                                            createDuplication(firstItemGameObject); // создаем дубликат первого предмета
+                                        }
+                                    }
+                                    else // если предмет из экипировки
+                                    {
+                                        firstItemGameObject.transform.SetParent(oldSlot.transform); // перемещаем первый предмет в старый слот
+                                        firstItemRectTransform.localPosition = Vector3.zero; // сбрасываем локальную позицию первого предмета
+                                    }
+                                }
+
+                            }
+                        }
+
+                        else // если слот пустой
+                        {
+                            if (newSlot.tag != "Slot" && newSlot.tag != "ItemIcon") // если новый слот не является слотом или иконкой предмета
+                            {
+                                firstItemGameObject.transform.SetParent(oldSlot.transform); // перемещаем первый предмет в старый слот
+                                firstItemRectTransform.localPosition = Vector3.zero; // сбрасываем локальную позицию первого предмета
+                            }
+                            else // если новый слот является слотом или иконкой предмета
+                            {
+                                firstItemGameObject.transform.SetParent(newSlot.transform); // перемещаем первый предмет в новый слот
+                                firstItemRectTransform.localPosition = Vector3.zero; // сбрасываем локальную позицию первого предмета
+
+                                if (newSlot.transform.parent.parent.GetComponent<EquipmentSystem>() == null && oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null) // если новый слот не в системе экипировки, а старый в системе экипировки
+                                    oldSlot.transform.parent.parent.GetComponent<Inventory>().UnEquipItem1(firstItem); // снимаем предмет с экипировки
+                                createDuplication(firstItemGameObject); // создаем дубликат первого предмета
+                            }
+                        }
+                    }
+
+
+                    // перетаскивание в систему экипировки/систему персонажа
+                    if (Inventory.GetComponent<EquipmentSystem>() != null) // проверка, есть ли компонент EquipmentSystem в инвентаре
+                    {
+                        ItemType[] itemTypeOfSlots = GameObject.FindGameObjectWithTag("EquipmentSystem").GetComponent<EquipmentSystem>().itemTypeOfSlots; // получение типов предметов в слотах системы экипировки
+                        int newSlotChildCount = newSlot.transform.parent.childCount; // подсчет количества дочерних объектов в новом слоте
+                        bool isOnSlot = newSlot.transform.parent.GetChild(0).tag == "ItemIcon"; // проверка, находится ли предмет в слоте (с тегом "ItemIcon")
+                        bool sameItemType = firstItem.itemType == secondItem.itemType; // проверка, совпадают ли типы предметов
+                        bool fromHot = oldSlot.transform.parent.parent.GetComponent<Hotbar>() != null; // проверка, является ли старый слот частью горячей панели
+
+                        // перетаскивание на слот, где уже есть предмет
+                        if (newSlotChildCount != 0 && isOnSlot) // если в новом слоте есть предмет и он является слотом
+                        {
+                            // предметы меняются местами, если они одного типа
+                            if (sameItemType && !sameItemRerferenced) // если типы предметов совпадают и они не ссылаются на один и тот же объект
+                            {
+                                Transform temp1 = secondItemGameObject.transform.parent.parent.parent; // временное сохранение родителя второго предмета
+                                Transform temp2 = oldSlot.transform.parent.parent; // временное сохранение родителя старого слота
+
+                                firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent); // установка родителем первого предмета родителя второго предмета
+                                secondItemGameObject.transform.SetParent(oldSlot.transform); // установка родителем второго предмета старый слот
+                                secondItemRectTransform.localPosition = Vector3.zero; // сброс локальной позиции второго предмета
+                                firstItemRectTransform.localPosition = Vector3.zero; // сброс локальной позиции первого предмета
+
+                                if (!temp1.Equals(temp2)) // если временные родительские объекты не равны
+                                {
+                                    if (firstItem.itemType == ItemType.Weapon) // если тип первого предмета - оружие
+                                    {
+                                        Inventory.GetComponent<Inventory>().UnEquipItem1(secondItem); // снятие второго предмета с экипировки
+                                        Inventory.GetComponent<Inventory>().EquiptItem(firstItem); // экипировка первого предмета
+                                    }
+                                    else // если тип первого предмета не оружие
+                                    {
+                                        Inventory.GetComponent<Inventory>().EquiptItem(firstItem); // экипировка первого предмета
+                                        if (secondItem.itemType != ItemType.Backpack) // если второй предмет не рюкзак
+                                            Inventory.GetComponent<Inventory>().UnEquipItem1(secondItem); // снятие второго предмета с экипировки
+                                    }
+                                }
+
+                                if (fromHot)
+                                    createDuplication(secondItemGameObject);
+
+                            }
+                            //if they are not from the same Itemtype the dragged one getting placed back
+                            else // иначе
+                            {
+                                firstItemGameObject.transform.SetParent(oldSlot.transform); // устанавливаем родителем объекта старый слот
+                                firstItemRectTransform.localPosition = Vector3.zero; // сбрасываем позицию объекта в слоте на (0, 0, 0)
+
+                                if (fromHot) // если предмет был из горячей панели
+                                    createDuplication(firstItemGameObject); // создаем дубликат предмета
+                            }
+                        }
+
+                        //if the slot is empty
+                        else // иначе
+                        {
+                            for (int i = 0; i < newSlot.parent.childCount; i++) // для каждого слота в родительском объекте нового слота
+                            {
+                                if (newSlot.Equals(newSlot.parent.GetChild(i))) // если новый слот совпадает с текущим слотом
+                                {
+                                    //checking if it is the right slot for the item
+                                    if (itemTypeOfSlots[i] == transform.GetComponent<ItemOnObject>().item.itemType) // проверяем, соответствует ли тип предмета типу слота
+                                    {
+                                        transform.SetParent(newSlot); // устанавливаем новый слот как родителя для предмета
+                                        rectTransform.localPosition = Vector3.zero; // сбрасываем позицию предмета в новом слоте на (0, 0, 0)
+
+                                        if (!oldSlot.transform.parent.parent.Equals(newSlot.transform.parent.parent)) // если старый слот не в том же родительском объекте
+                                            Inventory.GetComponent<Inventory>().EquiptItem(firstItem); // экипируем предмет в инвентаре
+                                    }
+                                    //else it get back to the old slot
+                                    else // иначе
+                                    {
+                                        transform.SetParent(oldSlot.transform); // возвращаем предмет в старый слот
+                                        rectTransform.localPosition = Vector3.zero; // сбрасываем позицию предмета в старом слоте на (0, 0, 0)
+                                        if (fromHot) // если предмет был из горячей панели
+                                            createDuplication(firstItemGameObject); // создаем дубликат предмета
                                     }
                                 }
                             }
-                            // Если предметы не помещаются в стек
+                        }
+                    }
+
+                    if (Inventory.GetComponent<CraftSystem>() != null) // Проверка, есть ли компонент CraftSystem в инвентаре
+                    {
+                        CraftSystem cS = Inventory.GetComponent<CraftSystem>(); // Получение компонента CraftSystem
+                        int newSlotChildCount = newSlot.transform.parent.childCount; // Получение количества дочерних объектов у нового слота
+
+                        bool isOnSlot = newSlot.transform.parent.GetChild(0).tag == "ItemIcon"; // Проверка, находится ли предмет на слоте с иконкой предмета
+                                                                                                // dragging on a slot where allready is an item on
+                        if (newSlotChildCount != 0 && isOnSlot) // Если в новом слоте есть предмет и он является иконкой
+                        {
+                            // check if the items fits into the other item
+                            bool fitsIntoStack = false; // Переменная для проверки, помещается ли предмет в стек
+                            if (sameItem) // Если предметы одинаковые
+                                fitsIntoStack = (firstItem.itemValue + secondItem.itemValue) <= firstItem.maxStack; // Проверка, помещаются ли предметы в один стек
+
+                            // if the item is stackable checking if the firstitemstack and seconditemstack is not full and check if they are the same items
+                            if (inventory.stackable && sameItem && firstItemStack && secondItemStack) // Если предметы можно складывать и оба стека не полные
+                            {
+                                // if the item does not fit into the other item
+                                if (fitsIntoStack && !sameItemRerferenced) // Если предмет помещается в стек и ссылки на предметы не совпадают
+                                {
+                                    secondItem.itemValue = firstItem.itemValue + secondItem.itemValue; // Обновление значения предмета второго стека
+                                    secondItemGameObject.transform.SetParent(newSlot.parent.parent); // Установка второго предмета как дочернего нового слота
+                                    Destroy(firstItemGameObject); // Удаление первого предмета
+                                    secondItemRectTransform.localPosition = Vector3.zero; // Сброс позиции второго предмета
+
+                                    if (secondItemGameObject.GetComponent<ConsumeItem>().duplication != null) // Проверка, есть ли дубликат у второго предмета
+                                    {
+                                        GameObject dup = secondItemGameObject.GetComponent<ConsumeItem>().duplication; // Получение дубликата
+                                        dup.GetComponent<ItemOnObject>().item.itemValue = secondItem.itemValue; // Обновление значения предмета дубликата
+                                        dup.GetComponent<SplitItem>().inv.stackableSettings(); // Обновление настроек стека для дубликата
+                                        dup.transform.parent.parent.parent.GetComponent<Inventory>().updateItemList(); // Обновление списка предметов в инвентаре
+                                    }
+                                    cS.ListWithItem(); // Обновление списка предметов в CraftSystem
+                                }
+
+                                else // Если предметы не помещаются в один стек
+                                {
+                                    // creates the rest of the item
+                                    int rest = (firstItem.itemValue + secondItem.itemValue) % firstItem.maxStack; // Вычисление остатка предмета
+
+                                    // fill up the other stack and adds the rest to the other stack 
+                                    if (!fitsIntoStack && rest > 0) // Если предметы не помещаются в один стек и есть остаток
+                                    {
+                                        firstItem.itemValue = firstItem.maxStack; // Установка значения первого предмета на максимум
+                                        secondItem.itemValue = rest; // Установка остатка для второго предмета
+
+                                        firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent); // Перемещение первого предмета в родитель второго предмета
+                                        secondItemGameObject.transform.SetParent(oldSlot.transform); // Перемещение второго предмета обратно в старый слот
+
+                                        firstItemRectTransform.localPosition = Vector3.zero; // Сброс позиции первого предмета
+                                        secondItemRectTransform.localPosition = Vector3.zero; // Сброс позиции второго предмета
+                                        cS.ListWithItem(); // Обновление списка предметов в CraftSystem
+                                    }
+                                }
+                            }
+
+                            //если не помещается
                             else
                             {
-                                // Создаем остаток от объединения предметов, если они одинаковые
+                                //создает остаток предмета
                                 int rest = 0;
-                                if (sameItem)
-                                    rest = (firstItem.itemValue + secondItem.itemValue) % firstItem.maxStack;
+                                if (sameItem) //если предметы одинаковые
+                                    rest = (firstItem.itemValue + secondItem.itemValue) % firstItem.maxStack; //вычисляет остаток от сложения значений предметов
 
-                                // Проверяем, помещается ли предмет в стек, и есть ли остаток
-                                if (!fitsIntoStack && rest > 0)
+                                //заполняет другой стек и добавляет остаток в другой стек
+                                if (!fitsIntoStack && rest > 0) //если не помещается в стек и есть остаток
                                 {
-                                    // Заполняем второй предмет до максимума
-                                    secondItem.itemValue = firstItem.maxStack;
-                                    // Устанавливаем значение первого предмета равным остатку
-                                    firstItem.itemValue = rest;
+                                    secondItem.itemValue = firstItem.maxStack; //максимальное значение второго предмета
+                                    firstItem.itemValue = rest; //остаток для первого предмета
 
-                                    // Перемещаем первый предмет в родительский слот второго предмета
-                                    firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent);
-                                    // Перемещаем второй предмет в старый слот
-                                    secondItemGameObject.transform.SetParent(oldSlot.transform);
+                                    firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent); //устанавливает родителя для первого предмета
+                                    secondItemGameObject.transform.SetParent(oldSlot.transform); //устанавливает родителя для второго предмета
 
-                                    // Устанавливаем локальные позиции обоих предметов в ноль, чтобы они находились в центре своих слотов
-                                    firstItemRectTransform.localPosition = Vector3.zero;
-                                    secondItemRectTransform.localPosition = Vector3.zero;
+                                    firstItemRectTransform.localPosition = Vector3.zero; //устанавливает локальную позицию первого предмета
+                                    secondItemRectTransform.localPosition = Vector3.zero; //устанавливает локальную позицию второго предмета
+                                    cS.ListWithItem(); //обновляет список предметов
+
                                 }
-                                // Если предметы разные или стек полон, они меняются местами
-                                else if (!fitsIntoStack && rest == 0)
+                                //если это разные предметы или стек полный, они меняются местами
+                                else if (!fitsIntoStack && rest == 0) //если не помещается в стек и остатка нет
                                 {
-                                    // Проверяем, перетаскивается ли предмет из системы экипировки в инвентарь и пытаемся ли мы поменять его на предмет того же типа
-                                    if (oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null && firstItem.itemType == secondItem.itemType)
+                                    //если вы перетаскиваете предмет из системы экипировки в инвентарь и пытаетесь поменять его на предмет того же типа
+                                    if (oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null && firstItem.itemType == secondItem.itemType) //проверка на систему экипировки и совпадение типов
                                     {
-                                        // Снимаем предмет с экипировки
-                                        newSlot.transform.parent.parent.parent.parent.GetComponent<Inventory>().UnEquipItem1(firstItem);
-                                        // Экипируем второй предмет
-                                        oldSlot.transform.parent.parent.GetComponent<Inventory>().EquiptItem(secondItem);
 
-                                        // Перемещаем первый предмет в родительский слот второго предмета
-                                        firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent);
-                                        // Перемещаем второй предмет в старый слот
-                                        secondItemGameObject.transform.SetParent(oldSlot.transform);
-                                        // Устанавливаем локальную позицию второго предмета в ноль
-                                        secondItemRectTransform.localPosition = Vector3.zero;
-                                        // Устанавливаем локальную позицию первого предмета в ноль
-                                        firstItemRectTransform.localPosition = Vector3.zero;
+                                        firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent); //устанавливает родителя для первого предмета
+                                        secondItemGameObject.transform.SetParent(oldSlot.transform); //устанавливает родителя для второго предмета
+                                        secondItemRectTransform.localPosition = Vector3.zero; //устанавливает локальную позицию второго предмета
+                                        firstItemRectTransform.localPosition = Vector3.zero; //устанавливает локальную позицию первого предмета
 
-                                        // Если у второго предмета есть дубликат, уничтожаем его
-                                        if (secondItemGameObject.GetComponent<ConsumeItem>().duplication != null)
-                                            Destroy(secondItemGameObject.GetComponent<ConsumeItem>().duplication);
+                                        oldSlot.transform.parent.parent.GetComponent<Inventory>().EquiptItem(secondItem); //экипирует второй предмет
+                                        newSlot.transform.parent.parent.parent.parent.GetComponent<Inventory>().UnEquipItem1(firstItem); //снимает экипировку с первого предмета
+                                    }
+                                    //если вы перетаскиваете предмет из системы экипировки в инвентарь и они не одного типа, они не меняются местами.
+                                    else if (oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null && firstItem.itemType != secondItem.itemType) //проверка на систему экипировки и несовпадение типов
+                                    {
+                                        firstItemGameObject.transform.SetParent(oldSlot.transform); //устанавливает родителя для первого предмета
+                                        firstItemRectTransform.localPosition = Vector3.zero; //устанавливает локальную позицию первого предмета
+                                    }
+                                    //обмен для остальной части инвентаря
+                                    else if (oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() == null) //если не система экипировки
+                                    {
+                                        firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent); //устанавливает родителя для первого предмета
+                                        secondItemGameObject.transform.SetParent(oldSlot.transform); //устанавливает родителя для второго предмета
+                                        secondItemRectTransform.localPosition = Vector3.zero; //устанавливает локальную позицию второго предмета
+                                        firstItemRectTransform.localPosition = Vector3.zero; //устанавливает локальную позицию первого предмета
                                     }
                                 }
-                            }
 
-                        }
-
-                        // Если новый слот пустой
-                        else
-                        {
-                            // Проверяем, что новый слот не является слотом или иконкой предмета
-                            if (newSlot.tag != "Slot" && newSlot.tag != "ItemIcon")
-                            {
-                                // Если новый слот не подходит, возвращаем первый предмет в старый слот
-                                firstItemGameObject.transform.SetParent(oldSlot.transform);
-                                // Устанавливаем локальную позицию первого предмета в ноль, чтобы он находился в центре старого слота
-                                firstItemRectTransform.localPosition = Vector3.zero;
-                            }
-                            else
-                            {
-                                // Если новый слот подходит, перемещаем первый предмет в новый слот
-                                firstItemGameObject.transform.SetParent(newSlot.transform);
-                                // Устанавливаем локальную позицию первого предмета в ноль, чтобы он находился в центре нового слота
-                                firstItemRectTransform.localPosition = Vector3.zero;
-
-                                // Проверяем, что новый слот не принадлежит системе экипировки, а старый слот принадлежит
-                                if (newSlot.transform.parent.parent.GetComponent<EquipmentSystem>() == null && oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null)
-                                    // Если это так, снимаем предмет с экипировки
-                                    oldSlot.transform.parent.parent.GetComponent<Inventory>().UnEquipItem1(firstItem);
                             }
                         }
 
-                    }
-                }
-
-
-
-                // Проверяем, перетаскивается ли предмет в панель быстрого доступа (Hotbar)
-                if (Inventory.GetComponent<Hotbar>() != null)
-                {
-                    // Получаем количество дочерних элементов у нового слота
-                    int newSlotChildCount = newSlot.transform.parent.childCount;
-                    // Проверяем, есть ли в новом слоте уже предмет (иконка предмета)
-                    bool isOnSlot = newSlot.transform.parent.GetChild(0).tag == "ItemIcon";
-
-                    // Проверяем, перетаскивается ли предмет на слот, где уже есть предмет
-                    if (newSlotChildCount != 0 && isOnSlot)
-                    {
-                        // Переменная для проверки, помещается ли предмет в другой предмет
-                        bool fitsIntoStack = false;
-
-                        // Если предметы одинаковые, проверяем, помещаются ли они в стек
-                        if (sameItem)
-                            fitsIntoStack = (firstItem.itemValue + secondItem.itemValue) <= firstItem.maxStack;
-
-                        // Если предметы могут быть сложены (stackable) и оба предмета являются одинаковыми
-                        if (inventory.stackable && sameItem && firstItemStack && secondItemStack)
+                        else // В противном случае
                         {
-                            // Если предмет не помещается в другой предмет
-                            if (fitsIntoStack && !sameItemRerferenced)
+                            if (newSlot.tag != "Slot" && newSlot.tag != "ItemIcon") // Если новый слот не является слотом или иконкой предмета
                             {
-                                // Обновляем значение второго предмета, добавляя значение первого
-                                secondItem.itemValue = firstItem.itemValue + secondItem.itemValue;
-
-                                // Перемещаем второй предмет в родительский слот нового слота
-                                secondItemGameObject.transform.SetParent(newSlot.parent.parent);
-
-                                // Уничтожаем объект первого предмета, так как он больше не нужен
-                                Destroy(firstItemGameObject);
-
-                                // Устанавливаем локальную позицию второго предмета в ноль, чтобы он находился в центре своего слота
-                                secondItemRectTransform.localPosition = Vector3.zero;
-
-                                // Если у второго предмета есть дубликат, обновляем его значение
-                                if (secondItemGameObject.GetComponent<ConsumeItem>().duplication != null)
-                                {
-                                    GameObject dup = secondItemGameObject.GetComponent<ConsumeItem>().duplication;
-                                    // Обновляем значение дубликата
-                                    dup.GetComponent<ItemOnObject>().item.itemValue = secondItem.itemValue;
-
-                                    // Вызываем настройки для стеков в инвентаре
-                                    Inventory.GetComponent<Inventory>().stackableSettings();
-
-                                    // Обновляем список предметов в инвентаре
-                                    dup.transform.parent.parent.parent.GetComponent<Inventory>().updateItemList();
-                                }
+                                firstItemGameObject.transform.SetParent(oldSlot.transform); // Устанавливаем родителя для предмета на старый слот
+                                firstItemRectTransform.localPosition = Vector3.zero; // Сбрасываем локальную позицию предмета в старом слоте
                             }
-
-                            else
+                            else // Иначе
                             {
-                                // Вычисляем остаток от сложения значений первого и второго предметов, чтобы определить, сколько осталось после заполнения стека
-                                int rest = (firstItem.itemValue + secondItem.itemValue) % firstItem.maxStack;
+                                firstItemGameObject.transform.SetParent(newSlot.transform); // Устанавливаем родителя для предмета на новый слот
+                                firstItemRectTransform.localPosition = Vector3.zero; // Сбрасываем локальную позицию предмета в новом слоте
 
-                                // Проверяем, помещается ли предмет в стек, и есть ли остаток, который нужно распределить
-                                if (!fitsIntoStack && rest > 0)
-                                {
-                                    // Устанавливаем значение первого предмета в максимальное значение стека
-                                    firstItem.itemValue = firstItem.maxStack;
-                                    // Устанавливаем значение второго предмета на остаток
-                                    secondItem.itemValue = rest;
-
-                                    // Перемещаем первый предмет в родительский объект второго предмета
-                                    firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent);
-                                    // Перемещаем второй предмет обратно в старый слот
-                                    secondItemGameObject.transform.SetParent(oldSlot.transform);
-
-                                    // Устанавливаем локальную позицию первого и второго предмета в ноль, чтобы они находились в центре своих слотов
-                                    firstItemRectTransform.localPosition = Vector3.zero;
-                                    secondItemRectTransform.localPosition = Vector3.zero;
-
-                                    // Создаем дубликат предмета
-                                    createDuplication(this.gameObject);
-                                    // Обновляем дубликат второго предмета
-                                    secondItemGameObject.GetComponent<ConsumeItem>().duplication.GetComponent<ItemOnObject>().item = secondItem;
-
-                                    // Обновляем настройки стека в инвентаре
-                                    secondItemGameObject.GetComponent<SplitItem>().inv.stackableSettings();
-                                }
-                            }
-                        }
-                        // Если предмет не помещается в стек
-                        else
-                        {
-                            // Создаем переменную для остатка
-                            int rest = 0;
-                            // Если предметы одинаковые, вычисляем остаток от сложения значений
-                            if (sameItem)
-                                rest = (firstItem.itemValue + secondItem.itemValue) % firstItem.maxStack;
-
-                            // Проверяем, является ли старый слот частью системы экипировки
-                            bool fromEquip = oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null;
-
-                            // Проверяем, помещается ли предмет в стек и есть ли остаток
-                            if (!fitsIntoStack && rest > 0)
-                            {
-                                // Устанавливаем значение второго предмета на максимальное значение стека
-                                secondItem.itemValue = firstItem.maxStack;
-                                // Устанавливаем значение первого предмета на остаток
-                                firstItem.itemValue = rest;
-
-                                // Создаем дубликат предмета
-                                createDuplication(this.gameObject);
-
-                                // Перемещаем первый предмет в родительский объект второго предмета
-                                firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent);
-                                // Перемещаем второй предмет обратно в старый слот
-                                secondItemGameObject.transform.SetParent(oldSlot.transform);
-
-                                // Устанавливаем локальную позицию первого и второго предмета в ноль, чтобы они находились в центре своих слотов
-                                firstItemRectTransform.localPosition = Vector3.zero;
-                                secondItemRectTransform.localPosition = Vector3.zero;
-                            }
-                            // Если предметы разные или стек полон, они меняются местами
-                            else if (!fitsIntoStack && rest == 0)
-                            {
-                                // Если предметы не из системы экипировки
-                                if (!fromEquip)
-                                {
-                                    // Перемещаем первый предмет в родительский объект второго предмета
-                                    firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent);
-                                    // Перемещаем второй предмет обратно в старый слот
-                                    secondItemGameObject.transform.SetParent(oldSlot.transform);
-                                    // Устанавливаем локальную позицию второго и первого предмета в ноль
-                                    secondItemRectTransform.localPosition = Vector3.zero;
-                                    firstItemRectTransform.localPosition = Vector3.zero;
-
-                                    // Если старый слот принадлежит основному инвентарю
-                                    if (oldSlot.transform.parent.parent.gameObject.Equals(GameObject.FindGameObjectWithTag("MainInventory")))
-                                    {
-                                        // Уничтожаем дубликат второго предмета
-                                        Destroy(secondItemGameObject.GetComponent<ConsumeItem>().duplication);
-                                        // Создаем дубликат первого предмета
-                                        createDuplication(firstItemGameObject);
-                                    }
-                                    else
-                                    {
-                                        // Создаем дубликат первого предмета
-                                        createDuplication(firstItemGameObject);
-                                    }
-                                }
-                                else
-                                {
-                                    // Если предметы из системы экипировки, перемещаем первый предмет обратно в старый слот
-                                    firstItemGameObject.transform.SetParent(oldSlot.transform);
-                                    // Устанавливаем локальную позицию первого предмета в ноль
-                                    firstItemRectTransform.localPosition = Vector3.zero;
-                                }
+                                if (newSlot.transform.parent.parent.GetComponent<EquipmentSystem>() == null && oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null) // Если в новом слоте нет системы экипировки, а в старом есть
+                                    oldSlot.transform.parent.parent.GetComponent<Inventory>().UnEquipItem1(firstItem); // Снимаем экипировку с предмета из старого слота
                             }
                         }
                     }
-                    // Если слот пустой
-                    else
-                    {
-                        // Проверяем, является ли новый слот не слотом и не иконкой предмета
-                        if (newSlot.tag != "Slot" && newSlot.tag != "ItemIcon")
-                        {
-                            // Перемещаем первый предмет обратно в старый слот
-                            firstItemGameObject.transform.SetParent(oldSlot.transform);
-                            // Устанавливаем локальную позицию первого предмета в ноль, чтобы он находился в центре слота
-                            firstItemRectTransform.localPosition = Vector3.zero;
-                        }
-                        else
-                        {
-                            // Перемещаем первый предмет в новый слот
-                            firstItemGameObject.transform.SetParent(newSlot.transform);
-                            // Устанавливаем локальную позицию первого предмета в ноль
-                            firstItemRectTransform.localPosition = Vector3.zero;
-
-                            // Проверяем, если новый слот не из системы экипировки, а старый слот из системы экипировки
-                            if (newSlot.transform.parent.parent.GetComponent<EquipmentSystem>() == null && oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null)
-                                // Разэкипируем предмет из старого слота
-                                oldSlot.transform.parent.parent.GetComponent<Inventory>().UnEquipItem1(firstItem);
-
-                            // Создаем дубликат первого предмета
-                            createDuplication(firstItemGameObject);
-                        }
-                    }
-
-
                 }
+            
 
-
-                // Проверяем, находится ли инвентарь в системе экипировки/системе персонажа
-                if (Inventory.GetComponent<EquipmentSystem>() != null)
-                {
-                    // Получаем типы предметов, которые могут находиться в слотах системы экипировки
-                    ItemType[] itemTypeOfSlots = GameObject.FindGameObjectWithTag("EquipmentSystem").GetComponent<EquipmentSystem>().itemTypeOfSlots;
-                    // Получаем количество дочерних объектов нового слота
-                    int newSlotChildCount = newSlot.transform.parent.childCount;
-                    // Проверяем, находится ли в новом слоте предмет (иконка)
-                    bool isOnSlot = newSlot.transform.parent.GetChild(0).tag == "ItemIcon";
-                    // Проверяем, совпадают ли типы предметов
-                    bool sameItemType = firstItem.itemType == secondItem.itemType;
-                    // Проверяем, был ли старый слот частью хотбара
-                    bool fromHot = oldSlot.transform.parent.parent.GetComponent<Hotbar>() != null;
-
-                    // Если в новом слоте уже есть предмет
-                    if (newSlotChildCount != 0 && isOnSlot)
-                    {
-                        // Если типы предметов совпадают и они не ссылаются на один и тот же объект
-                        if (sameItemType && !sameItemRerferenced)
-                        {
-                            // Сохраняем родительские объекты для временного использования
-                            Transform temp1 = secondItemGameObject.transform.parent.parent.parent;
-                            Transform temp2 = oldSlot.transform.parent.parent;
-
-                            // Меняем местами предметы
-                            firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent);
-                            secondItemGameObject.transform.SetParent(oldSlot.transform);
-                            // Устанавливаем локальную позицию обоих предметов в ноль
-                            secondItemRectTransform.localPosition = Vector3.zero;
-                            firstItemRectTransform.localPosition = Vector3.zero;
-
-                            // Проверяем, находятся ли предметы в разных родительских объектах
-                            if (!temp1.Equals(temp2))
-                            {
-                                // Если первый предмет - оружие, разэкипируем второй предмет и экипируем первый
-                                if (firstItem.itemType == ItemType.UFPS_Weapon)
-                                {
-                                    Inventory.GetComponent<Inventory>().UnEquipItem1(secondItem);
-                                    Inventory.GetComponent<Inventory>().EquiptItem(firstItem);
-                                }
-                                else
-                                {
-                                    // Экипируем первый предмет
-                                    Inventory.GetComponent<Inventory>().EquiptItem(firstItem);
-                                    // Если второй предмет не рюкзак, разэкипируем его
-                                    if (secondItem.itemType != ItemType.Backpack)
-                                        Inventory.GetComponent<Inventory>().UnEquipItem1(secondItem);
-                                }
-                            }
-
-                            // Если предмет был из хотбара, создаем дубликат второго предмета
-                            if (fromHot)
-                                createDuplication(secondItemGameObject);
-                        }
-                        // Если типы предметов не совпадают, возвращаем перетаскиваемый предмет обратно
-                        else
-                        {
-                            firstItemGameObject.transform.SetParent(oldSlot.transform);
-                            firstItemRectTransform.localPosition = Vector3.zero;
-
-                            // Если предмет был из хотбара, создаем дубликат первого предмета
-                            if (fromHot)
-                                createDuplication(firstItemGameObject);
-                        }
-                    }
-
-
-                    // Если слот пустой
-                    else
-                    {
-                        // Проходим по всем дочерним элементам родителя нового слота
-                        for (int i = 0; i < newSlot.parent.childCount; i++)
-                        {
-                            // Проверяем, совпадает ли новый слот с текущим дочерним элементом
-                            if (newSlot.Equals(newSlot.parent.GetChild(i)))
-                            {
-                                // Проверяем, является ли тип слота подходящим для предмета
-                                if (itemTypeOfSlots[i] == transform.GetComponent<ItemOnObject>().item.itemType)
-                                {
-                                    // Устанавливаем родителем предмета новый слот
-                                    transform.SetParent(newSlot);
-                                    // Устанавливаем локальную позицию предмета в ноль, чтобы он находился в центре слота
-                                    rectTransform.localPosition = Vector3.zero;
-
-                                    // Если старый слот и новый слот не находятся в одном родительском объекте, экипируем предмет
-                                    if (!oldSlot.transform.parent.parent.Equals(newSlot.transform.parent.parent))
-                                        Inventory.GetComponent<Inventory>().EquiptItem(firstItem);
-                                }
-                                // Если тип слота не подходит, возвращаем предмет обратно в старый слот
-                                else
-                                {
-                                    transform.SetParent(oldSlot.transform);
-                                    rectTransform.localPosition = Vector3.zero;
-                                    // Если предмет был из хотбара, создаем дубликат первого предмета
-                                    if (fromHot)
-                                        createDuplication(firstItemGameObject);
-                                }
-                            }
-                        }
-                    }
-
-                }
-
-                // Проверяем, существует ли система крафта в инвентаре
-                if (Inventory.GetComponent<CraftSystem>() != null)
-                {
-                    // Получаем компонент CraftSystem
-                    CraftSystem cS = Inventory.GetComponent<CraftSystem>();
-                    // Получаем количество дочерних элементов нового слота
-                    int newSlotChildCount = newSlot.transform.parent.childCount;
-
-                    // Проверяем, есть ли предмет в новом слоте
-                    bool isOnSlot = newSlot.transform.parent.GetChild(0).tag == "ItemIcon";
-
-                    // Если в новом слоте уже есть предмет
-                    if (newSlotChildCount != 0 && isOnSlot)
-                    {
-                        // Переменная для проверки, помещается ли предмет в другой предмет
-                        bool fitsIntoStack = false;
-
-                        // Проверяем, совпадают ли предметы
-                        if (sameItem)
-                            fitsIntoStack = (firstItem.itemValue + secondItem.itemValue) <= firstItem.maxStack;
-
-                        // Если предметы могут складываться, и у обоих предметов есть место для увеличения
-                        if (inventory.stackable && sameItem && firstItemStack && secondItemStack)
-                        {
-                            // Если предмет помещается в другой предмет и они не ссылаются на один и тот же объект
-                            if (fitsIntoStack && !sameItemRerferenced)
-                            {
-                                // Обновляем значение второго предмета, складывая его с первым
-                                secondItem.itemValue = firstItem.itemValue + secondItem.itemValue;
-                                // Устанавливаем родителем второго предмета новый слот
-                                secondItemGameObject.transform.SetParent(newSlot.parent.parent);
-                                // Удаляем первый предмет из игры
-                                Destroy(firstItemGameObject);
-                                // Устанавливаем локальную позицию второго предмета в ноль
-                                secondItemRectTransform.localPosition = Vector3.zero;
-
-                                // Если у второго предмета есть дубликат
-                                if (secondItemGameObject.GetComponent<ConsumeItem>().duplication != null)
-                                {
-                                    // Получаем дубликат и обновляем его значение
-                                    GameObject dup = secondItemGameObject.GetComponent<ConsumeItem>().duplication;
-                                    dup.GetComponent<ItemOnObject>().item.itemValue = secondItem.itemValue;
-                                    dup.GetComponent<SplitItem>().inv.stackableSettings();
-                                    // Обновляем список предметов в инвентаре
-                                    dup.transform.parent.parent.parent.GetComponent<Inventory>().updateItemList();
-                                }
-                                // Обновляем список предметов в системе крафта
-                                cS.ListWithItem();
-                            }
-
-                            else
-                            {
-                                // Создаем остаток от сложения значений предметов
-                                int rest = (firstItem.itemValue + secondItem.itemValue) % firstItem.maxStack;
-
-                                // Если предметы не помещаются в один стек и есть остаток
-                                if (!fitsIntoStack && rest > 0)
-                                {
-                                    // Устанавливаем значение первого предмета на максимум
-                                    firstItem.itemValue = firstItem.maxStack;
-                                    // Устанавливаем остаток во втором предмете
-                                    secondItem.itemValue = rest;
-
-                                    // Устанавливаем родителем первого предмета родитель второго предмета
-                                    firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent);
-                                    // Устанавливаем родителем второго предмета старый слот
-                                    secondItemGameObject.transform.SetParent(oldSlot.transform);
-
-                                    // Устанавливаем локальную позицию обоих предметов в ноль
-                                    firstItemRectTransform.localPosition = Vector3.zero;
-                                    secondItemRectTransform.localPosition = Vector3.zero;
-
-                                    // Обновляем список предметов в системе крафта
-                                    cS.ListWithItem();
-                                }
-                            }
-
-
-                        }
-                        // Если предметы не помещаются в один стек
-                        else
-                        {
-                            // Создаем переменную для остатка
-                            int rest = 0;
-
-                            // Если предметы одинаковые, вычисляем остаток от сложения их значений
-                            if (sameItem)
-                                rest = (firstItem.itemValue + secondItem.itemValue) % firstItem.maxStack;
-
-                            // Если предметы не помещаются в один стек и есть остаток
-                            if (!fitsIntoStack && rest > 0)
-                            {
-                                // Устанавливаем значение второго предмета на максимум
-                                secondItem.itemValue = firstItem.maxStack;
-                                // Устанавливаем остаток в первом предмете
-                                firstItem.itemValue = rest;
-
-                                // Устанавливаем родителем первого предмета родитель второго предмета
-                                firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent);
-                                // Устанавливаем родителем второго предмета старый слот
-                                secondItemGameObject.transform.SetParent(oldSlot.transform);
-
-                                // Устанавливаем локальную позицию обоих предметов в ноль
-                                firstItemRectTransform.localPosition = Vector3.zero;
-                                secondItemRectTransform.localPosition = Vector3.zero;
-
-                                // Обновляем список предметов в системе крафта
-                                cS.ListWithItem();
-                            }
-                            // Если предметы разные или стек полон, они меняются местами
-                            else if (!fitsIntoStack && rest == 0)
-                            {
-                                // Проверка: перетаскивается ли предмет из системы экипировки в инвентарь и попытка обменять его на предмет того же типа
-                                if (oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null && firstItem.itemType == secondItem.itemType)
-                                {
-                                    // Меняем местами предметы в иерархии объектов
-                                    firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent);
-                                    secondItemGameObject.transform.SetParent(oldSlot.transform);
-
-                                    // Сбрасываем локальные позиции предметов
-                                    secondItemRectTransform.localPosition = Vector3.zero;
-                                    firstItemRectTransform.localPosition = Vector3.zero;
-
-                                    // Экипируем второй предмет
-                                    oldSlot.transform.parent.parent.GetComponent<Inventory>().EquiptItem(secondItem);
-                                    // Снимаем экипировку с первого предмета
-                                    newSlot.transform.parent.parent.parent.parent.GetComponent<Inventory>().UnEquipItem1(firstItem);
-                                }
-                                // Если перетаскивается предмет из системы экипировки в инвентарь и они не одного типа, обмен не происходит
-                                else if (oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null && firstItem.itemType != secondItem.itemType)
-                                {
-                                    // Возвращаем первый предмет в старый слот
-                                    firstItemGameObject.transform.SetParent(oldSlot.transform);
-                                    firstItemRectTransform.localPosition = Vector3.zero;
-                                }
-                                // Обмен происходит для остальных слотов инвентаря
-                                else if (oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() == null)
-                                {
-                                    // Меняем местами предметы в инвентаре
-                                    firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent);
-                                    secondItemGameObject.transform.SetParent(oldSlot.transform);
-
-                                    // Сбрасываем локальные позиции предметов
-                                    secondItemRectTransform.localPosition = Vector3.zero;
-                                    firstItemRectTransform.localPosition = Vector3.zero;
-                                }
-                            }
-
-
-                        }
-                    }
-                    else
-                    {
-                        // Проверка: если новый слот не является слотом инвентаря и не иконкой предмета
-                        if (newSlot.tag != "Slot" && newSlot.tag != "ItemIcon")
-                        {
-                            // Возвращаем первый предмет в старый слот, если новый слот недопустим
-                            firstItemGameObject.transform.SetParent(oldSlot.transform);
-                            firstItemRectTransform.localPosition = Vector3.zero;
-                        }
-                        else
-                        {
-                            // Перемещаем первый предмет в новый слот
-                            firstItemGameObject.transform.SetParent(newSlot.transform);
-                            firstItemRectTransform.localPosition = Vector3.zero;
-
-                            // Проверка: если новый слот не принадлежит системе экипировки, а старый принадлежит
-                            if (newSlot.transform.parent.parent.GetComponent<EquipmentSystem>() == null && oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null)
-                                // Снимаем экипировку с первого предмета
-                                oldSlot.transform.parent.parent.GetComponent<Inventory>().UnEquipItem1(firstItem);
-                        }
-                    }
-
-                }
-
-
-            }
-
-            else
+            else // иначе
             {
-                // Создание нового объекта предмета, который будет сброшен на землю
-                GameObject dropItem = (GameObject)Instantiate(GetComponent<ItemOnObject>().item.itemModel);
-
-                // Добавление компонента PickUpItem к новому объекту
-                dropItem.AddComponent<PickUpItem>();
-
-                // Установка ссылки на объект предмета в компоненте PickUpItem
-                dropItem.GetComponent<PickUpItem>().item = this.gameObject.GetComponent<ItemOnObject>().item;
-
-                // Установка позиции нового предмета на позицию игрока
-                dropItem.transform.localPosition = GameObject.FindGameObjectWithTag("Player").transform.localPosition;
-
-                // Обновление списка предметов в инвентаре
-                inventory.OnUpdateItemList();
-
-                // Если старый слот принадлежит системе экипировки, снимаем предмет с экипировки
-                if (oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null)
-                    inventory.GetComponent<Inventory>().UnEquipItem1(dropItem.GetComponent<PickUpItem>().item);
-                // Удаляем текущий объект (предмет), который был перемещен
-                Destroy(this.gameObject);
+                GameObject dropItem = (GameObject)Instantiate(GetComponent<ItemOnObject>().item.itemModel); // создаем новый объект dropItem на основе модели предмета
+                dropItem.AddComponent<PickUpItem>(); // добавляем компонент PickUpItem к новому объекту
+                dropItem.GetComponent<PickUpItem>().item = this.gameObject.GetComponent<ItemOnObject>().item; // присваиваем предмет из текущего объекта новому объекту
+                dropItem.transform.localPosition = GameObject.FindGameObjectWithTag("Player").transform.localPosition; // устанавливаем позицию нового объекта на позицию игрока
+                inventory.OnUpdateItemList(); // обновляем список предметов в инвентаре
+                if (oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() != null) // если родительский слот имеет компонент EquipmentSystem
+                    inventory.GetComponent<Inventory>().UnEquipItem1(dropItem.GetComponent<PickUpItem>().item); // снимаем предмет с экипировки
+                Destroy(this.gameObject); // уничтожаем текущий объект
+            }
 
             }
-        }
-        // Обновление списка предметов в инвентаре после всех изменений
-        inventory.OnUpdateItemList();
-    }
+            inventory.OnUpdateItemList(); // обновляем список предметов в инвентаре
+        }   
 
 }

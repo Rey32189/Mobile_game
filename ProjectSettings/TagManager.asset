@@ -22,6 +22,7 @@ TagManager:
   - MainInventory
   - Hotbar
   - Timer
+  - AmmoInventory
   layers:
   - Default
   - TransparentFX

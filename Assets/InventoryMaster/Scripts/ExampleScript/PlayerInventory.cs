@@ -7,23 +7,27 @@ using TMPro;
 using System.IO;
 using UnityEngine.SceneManagement;
 using static WeaponSwitcher;
+using static UnityEditor.Progress;
 
 public class PlayerInventory : MonoBehaviour
 {
 
-
+    private List<Item> ammoItems = new List<Item>(); // Список предметов, находящихся в инвентаре боеприпасов
 
 
     public GameObject inventory; // Переменная для хранения ссылки на объект инвентаря
+    public GameObject ammoinvetory; // Переменная для хранения ссылки на объект инвентаря
     public GameObject characterSystem; // Переменная для хранения ссылки на систему персонажа
     public GameObject craftSystem; // Переменная для хранения ссылки на систему крафта
     private Inventory craftSystemInventory; // Переменная для хранения инвентаря системы крафта
     private CraftSystem cS; // Переменная для хранения ссылки на систему крафта
     private Inventory mainInventory; // Переменная для хранения основного инвентаря
-     private Inventory characterSystemInventory; // Переменная для хранения инвентаря системы персонажа
+    private Inventory ammoInventory; // Переменная для хранения основного инвентаря
+    private Inventory characterSystemInventory; // Переменная для хранения инвентаря системы персонажа
     private Tooltip toolTip; // Переменная для хранения ссылки на подсказку
             
-    public int itemID;
+    public int itemIDWeapon; //переменная для хранения id оружия
+
 
     private InputManager inputManagerDatabase; // Переменная для хранения ссылки на менеджер ввода
 
@@ -58,8 +62,11 @@ public class PlayerInventory : MonoBehaviour
 
         Inventory.ItemEquip += EquipWeapon; // Подписка на событие экипировки предмета, вызывая метод EquipWeapon при его срабатывании
         Inventory.UnEquipItem += UnEquipWeapon; // Подписка на событие разэкипировки предмета, вызывая метод UnEquipWeapon при его срабатывании
-    }
 
+        Inventory.ItemEquip += EquipAmmo; // Подписка на событие экипировки предмета, вызывая метод EquipWeapon при его срабатывании
+        Inventory.UnEquipItem += UnEquipAmmo; // Подписка на событие разэкипировки предмета, вызывая метод UnEquipWeapon при его срабатывании
+    }
+   
 
     public void OnDisable() // Метод, вызываемый при деактивации объекта
     {
@@ -73,34 +80,43 @@ public class PlayerInventory : MonoBehaviour
 
         Inventory.UnEquipItem -= UnEquipWeapon;
         Inventory.ItemEquip -= EquipWeapon;
+
+        Inventory.UnEquipItem -= UnEquipAmmo;
+        Inventory.ItemEquip -= EquipAmmo;
+   
     }
+    public int itemIDAmmo = -1;//переменная для хранения id боеприпасов
+    public int itemValueAmmo = 0;//переменная для хранения id боеприпасов
+
+
     // Вложенный статический класс для обработки ItemID
-    public int GetItemID()
+    public int GetItemIDWeapon() //для возврата значения idоружия и дальнейшей его передачи
     {
-        return itemID; // Возвращаем текущее значение itemID
+        return itemIDWeapon; // Возвращаем текущее значение itemID оружия
     }
+    public int GetItemIDAmmo() //для возврата значения id патронов и дальнейшей его передачи
+    {
+        return itemIDAmmo; // Возвращаем текущее значение itemID оружия
+    }
+    public int GetItemValueAmmo() //для возврата значения колличества и дальнейшей его передачи
+    {
+        return itemValueAmmo; // Возвращаем текущее значение itemID оружия
+    }
+
+
     public void EquipWeapon(Item item) // Метод для экипировки оружия
     {
-        Debug.Log("EquipWeapon вызван с Item: " + item);
+        //Debug.Log("EquipWeapon вызван с Item: " + item);
 
         if (item.itemType == ItemType.Weapon) // Проверяем, является ли предмет оружием
         {
-            Debug.Log("Предмет является оружием.");
 
-            // Устанавливаем itemID в ItemIDHandler только один раз
             if (item.itemID != 0) // Проверяем, что ItemID не равен 0 
             {
-                itemID = item.itemID;
-                Debug.Log("ItemID установлен: " + item.itemID);
+                itemIDWeapon = item.itemID;
+                //Debug.Log("ItemID установлен: " + item.itemID);
             }
-            else
-            {
-                Debug.LogWarning("ItemID равен 0, не устанавливаем оружие.");
-            }
-        }
-        else
-        {
-            Debug.LogWarning("Предмет не является оружием.");
+
         }
     }
 
@@ -114,13 +130,63 @@ public class PlayerInventory : MonoBehaviour
 
                 if (item.itemID != 0) // Проверяем, что ItemID не равен 0 
                 {
-                    itemID = 0; // Получаем ID предмета                                                  
-                    Debug.Log("Найден ItemID: " + itemID);
+                    itemIDWeapon = 0; // Получаем ID предмета                                                  
+                    //Debug.Log("Найден ItemID: " + itemIDWeapon);
                 }
             }
         }
     }
+    public void EquipAmmo(Item item) // Метод для экипировки боеприпасов
+    {
+        Debug.Log("EquipAmmo вызван с Item: " + item);
 
+        if (item.itemType == ItemType.Ammo) // Проверяем, является ли предмет боеприпасов
+        {
+            Debug.Log("Предмет является боеприпасов.");
+
+            // Устанавливаем itemID в ItemIDHandler только один раз
+            if (item.itemID != 0) // Проверяем, что ItemID не равен 0 
+            {
+                itemIDAmmo = item.itemID;
+                Debug.Log("ItemID установлен: " + item.itemID);
+            }
+            if (item.itemValue != 0) // Проверяем, что ItemID не равен 0 
+            {
+                itemValueAmmo = item.itemValue;
+                Debug.Log("itemValueAmmo установлен: " + item.itemValue);
+            }
+            else
+            {
+                Debug.LogWarning("itemValue равен 0, не устанавливаем оружие.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Предмет не является боеприпасом.");
+        }
+    }
+
+
+    void UnEquipAmmo(Item item) // Метод для разэкипировки боеприпасов
+    {
+        if (item.itemType == ItemType.Ammo) // Проверяем, является ли предмет оружием
+        {
+            for (int i = 0; i < item.itemAttributes.Count; i++) // Проходим по всем атрибутам предмета
+            {
+
+                if (item.itemID != 0) // Проверяем, что ItemID не равен 0 
+                {
+                    itemIDAmmo = 0; // Получаем ID предмета                                                  
+                    Debug.Log("Найден ItemID: " + itemIDAmmo);
+                }
+                if (item.itemValue != 0) // Проверяем, что ItemID не равен 0 
+                {
+                    itemValueAmmo = item.itemValue;
+                    Debug.Log("itemValueAmmo установлен: " + item.itemValue);
+                }
+            }
+        }
+    }
     void OnBackpack(Item item) // Метод, вызываемый при экипировке рюкзака
     {
         if (item.itemType == ItemType.Backpack) // Проверяем, является ли предмет рюкзаком
@@ -206,7 +272,7 @@ public class PlayerInventory : MonoBehaviour
 
     void Start() // Метод, вызываемый при старте игры
     {
-        
+
         // Код для инициализации текстов и изображений HP и маны (закомментирован)
         if (HPMANACanvas != null)
         {
@@ -229,12 +295,26 @@ public class PlayerInventory : MonoBehaviour
 
         if (inventory != null) // Если инвентарь задан
             mainInventory = inventory.GetComponent<Inventory>(); // Получаем компонент основного инвентаря
+            
 
         if (characterSystem != null) // Если система персонажа задана
             characterSystemInventory = characterSystem.GetComponent<Inventory>(); // Получаем компонент инвентаря системы персонажа
 
         if (craftSystem != null) // Если система крафта задана
             craftSystemInventory = craftSystem.GetComponent<Inventory>(); // Получаем компонент инвентаря системы крафта
+
+
+
+        // Проверьте, что все инвентарные компоненты инициализированы
+        if (ammoinvetory != null)
+        {
+            ammoInventory = ammoinvetory.GetComponent<Inventory>(); // Получаем компонент инвентаря для боеприпасов
+            Debug.Log("Инвентарь боеприпасов инициализирован.");
+        }
+        else
+        {
+            Debug.LogError("Инвентарь боеприпасов не установлен.");
+        }
     }
 
     void UpdateHPBar() // Метод для обновления полосы здоровья (закомментирован)
@@ -297,13 +377,19 @@ public class PlayerInventory : MonoBehaviour
         for (int i = 0; i < item.itemAttributes.Count; i++) // Проходим по всем атрибутам предмета
         {
             if (item.itemAttributes[i].attributeName == "Health") // Если атрибут - здоровье
+            {
                 maxHealth += item.itemAttributes[i].attributeValue; // Увеличиваем максимальное здоровье
+                currentHealth += item.itemAttributes[i].attributeValue;
+            }
             if (item.itemAttributes[i].attributeName == "Mana") // Если атрибут - мана
                 maxMana += item.itemAttributes[i].attributeValue; // Увеличиваем максимальную ману
             if (item.itemAttributes[i].attributeName == "Armor") // Если атрибут - броня
                 maxArmor += item.itemAttributes[i].attributeValue; // Увеличиваем максимальную броню
             if (item.itemAttributes[i].attributeName == "Damage") // Если атрибут - урон
+            {
                 maxDamage += item.itemAttributes[i].attributeValue; // Увеличиваем максимальный урон
+                currentDamage = maxDamage; // Обновляем текущий урон до максимального
+            }
         }
         if (HPMANACanvas != null) // Код для обновления полосы HP и маны (закомментирован)
         {
@@ -323,7 +409,10 @@ public class PlayerInventory : MonoBehaviour
             if (item.itemAttributes[i].attributeName == "Armor") // Если атрибут - броня
                 maxArmor -= item.itemAttributes[i].attributeValue; // Уменьшаем максимальную броню
             if (item.itemAttributes[i].attributeName == "Damage") // Если атрибут - урон
+            {
                 maxDamage -= item.itemAttributes[i].attributeValue; // Уменьшаем максимальный урон
+                currentDamage = maxDamage; // Обновляем текущий урон до максимального
+            }
         }
         if (HPMANACanvas != null) // Код для обновления полосы HP и маны (закомментирован)
         {
@@ -337,7 +426,36 @@ public class PlayerInventory : MonoBehaviour
     void Update() // Метод, вызываемый каждый кадр
     {
 
+        if (ammoInventory != null && ammoInventory.ItemsInInventory.Count > 0)
+        {
+            Item ammoItem = ammoInventory.ItemsInInventory[0]; // Получаем текущий предмет
+            //int newAmmoValue = ammoItem.itemValue; // Получаем текущее количество патронов
 
+            // Проверяем, изменился ли ID или количество патронов
+            if (ammoItem.itemID != itemIDAmmo || ammoItem.itemValue != itemValueAmmo)
+            {
+                // Если значения изменились, обновляем переменные
+                itemIDAmmo = ammoItem.itemID;
+                itemValueAmmo = ammoItem.itemValue;
+
+                // Вызываем метод обновления
+                EquipAmmo(ammoItem);
+                Debug.Log($"Ammo Changed: ID = {itemIDAmmo}, Value = {itemValueAmmo}");
+            }
+        }
+        else
+        {
+            // Если инвентарь пуст, сбросьте значения
+            if (itemIDAmmo != -1 || itemValueAmmo != 0)
+            {
+                itemIDAmmo = -1;
+                itemValueAmmo = 0;
+                Debug.Log("Ammo Inventory is empty, reset values.");
+            }
+        }
+
+
+        //CheckAmmoInventory();
         // Проверяем, нажата ли клавиша для открытия системы персонажа
         if (Input.GetKeyDown(inputManagerDatabase.CharacterSystemKeyCode))
         {

@@ -6,6 +6,7 @@ public class PickUpItem : MonoBehaviour // Определяем класс PickU
     public Item item; // Публичная переменная для хранения информации о предмете, который можно подобрать
     private Inventory _inventory; // Закрытая переменная для хранения ссылки на инвентарь игрока
     private GameObject _player; // Закрытая переменная для хранения ссылки на объект игрока
+    public int _upDistans = 1;
 
     // Метод, вызываемый при инициализации
     void Start()
@@ -25,7 +26,7 @@ public class PickUpItem : MonoBehaviour // Определяем класс PickU
             float distance = Vector3.Distance(this.gameObject.transform.position, _player.transform.position);
 
             // Проверяем, находится ли игрок в пределах 3 единиц расстояния от предмета
-            if (distance <= 3)
+            if (distance <= _upDistans)
             {
                 // Проверяем, существует ли предмет уже в инвентаре
                 bool check = _inventory.checkIfItemAllreadyExist(item.itemID, item.itemValue);

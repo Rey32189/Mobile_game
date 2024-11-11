@@ -242,7 +242,7 @@ MonoBehaviour:
       + 10 Health'
     itemIcon: {fileID: 21300000, guid: a4d3f378d1a88f346af15ee906321f2a, type: 3}
     itemModel: {fileID: 100000, guid: 40da790cc27843b45b9c255c8d996b43, type: 3}
-    itemValue: 5
+    itemValue: 6
     itemType: 2
     itemWeight: 0
     maxStack: 5
@@ -575,3 +575,32 @@ MonoBehaviour:
     indexItemInList: 999
     rarity: 0
     itemAttributes: []
+  - itemName: Oboima
+    itemID: 36
+    itemDesc: "\u044D\u0442\u0438\u043C \u043D\u0430\u0434\u043E \u0437\u0430\u0440\u044F\u0436\u0430\u0442\u044C
+      \u0430\u0432\u0442\u043E\u043C\u0430\u0442"
+    itemIcon: {fileID: 21300000, guid: 10d6a3e57e6b64d46aeaeb540534ac5a, type: 3}
+    itemModel: {fileID: 4046431659008747637, guid: 138bcf3f05934f54c9e8ee833303b0a7, type: 3}
+    itemValue: 11
+    itemType: 14
+    itemWeight: 0
+    maxStack: 50
+    indexItemInList: 999
+    rarity: 1
+    itemAttributes:
+    - attributeName: Armor
+      attributeValue: 5
+  - itemName: oboima 2
+    itemID: 37
+    itemDesc: 
+    itemIcon: {fileID: 21300000, guid: 2974c36aaed810f43a4ed47e3d754629, type: 3}
+    itemModel: {fileID: 100000, guid: 40da790cc27843b45b9c255c8d996b43, type: 3}
+    itemValue: 1
+    itemType: 14
+    itemWeight: 0
+    maxStack: 50
+    indexItemInList: 999
+    rarity: 0
+    itemAttributes:
+    - attributeName: Damage
+      attributeValue: 7

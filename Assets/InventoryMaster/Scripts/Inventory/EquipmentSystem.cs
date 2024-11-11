@@ -7,9 +7,12 @@ using UnityEditor;
 #endif 
 using UnityEngine.UI; 
 using UnityEngine.EventSystems;
+using System.IO;
 
 public class EquipmentSystem : MonoBehaviour 
 {
+   
+
     [SerializeField] 
     public int slotsInTotal; // Публичное целочисленное поле для хранения общего количества слотов.
 
@@ -47,6 +50,7 @@ public class EquipmentSystem : MonoBehaviour
             Inventory inv = panel.AddComponent<Inventory>(); // Добавляет компонент Inventory к панели.
             panel.AddComponent<InventoryDesign>(); // Добавляет компонент InventoryDesign к панели.
             panel.AddComponent<EquipmentSystem>(); // Добавляет компонент EquipmentSystem к панели.
+       
             inv.getPrefabs(); // Вызывает метод getPrefabs у инвентаря.
         }
         else // Если объект с тегом "Canvas" уже существует.
@@ -60,10 +64,11 @@ public class EquipmentSystem : MonoBehaviour
             GameObject draggingItem = (GameObject)Instantiate(Resources.Load("Prefabs/DraggingItem") as GameObject); // Загружает и создает объект для перетаскиваемого элемента.
             panel.AddComponent<InventoryDesign>(); // Добавляет компонент InventoryDesign к панели.
             draggingItem.transform.SetParent(GameObject.FindGameObjectWithTag("Canvas").transform, true); // Устанавливает родителем перетаскиваемого элемента объект с тегом "Canvas".
+
             inv.getPrefabs(); // Вызывает метод getPrefabs у инвентаря для инициализации префабов.
         }
     }
 #endif
-
+    
 }
 

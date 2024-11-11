@@ -18,7 +18,7 @@ public class WeaponSwitcher : MonoBehaviour
 
     void Update()
     {
-        int currentItemID = playerInventory.GetItemID();
+        int currentItemID = playerInventory.GetItemIDWeapon();
 
         if (currentItemID != lastItemID) // Проверяем на изменение
         {

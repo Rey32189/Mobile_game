@@ -135,7 +135,7 @@ public class ConsumeItem : MonoBehaviour, IPointerDownHandler // Определ�
                         }
                     }
                 }
-                if (!gearable && item.itemType != ItemType.Ammo && item.itemType != ItemType.UFPS_Grenade) // Если предмет не может быть экипирован и не является боеприпасом или гранатой.
+                if (!gearable && item.itemType != ItemType.Ammo) // Если предмет не может быть экипирован и не является боеприпасом или гранатой.
                 {
                     Item itemFromDup = null; // Переменная для хранения информации о предмете из дубликата.
                     if (duplication != null) // Проверка, существует ли дубликат.
@@ -257,7 +257,7 @@ public class ConsumeItem : MonoBehaviour, IPointerDownHandler // Определ�
                 }
             }
         }
-        if (!gearable && item.itemType != ItemType.Ammo && item.itemType != ItemType.UFPS_Grenade) // Если предмет не может быть экипирован и не является боеприпасом или гранатой.
+        if (!gearable && item.itemType != ItemType.Ammo) // Если предмет не может быть экипирован и не является боеприпасом или гранатой.
         {
             if (duplication != null) // Проверка, существует ли дубликат.
                 itemFromDup = duplication.GetComponent<ItemOnObject>().item; // Получение информации о предмете из дубликата.

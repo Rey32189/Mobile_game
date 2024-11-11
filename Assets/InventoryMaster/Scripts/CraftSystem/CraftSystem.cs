@@ -47,35 +47,36 @@ public class CraftSystem : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-    [MenuItem("Master System/Create/Craft System")]
-    public static void menuItemCreateInventory()
+    [MenuItem("Master System/Create/Craft System")] // Создает пункт меню в редакторе Unity для вызова метода menuItemCreateInventory.
+    public static void menuItemCreateInventory() // Определяет статический метод, который будет вызываться при выборе пункта меню.
     {
-        GameObject Canvas = null;
-        if (GameObject.FindGameObjectWithTag("Canvas") == null)
+        GameObject Canvas = null; // Инициализирует переменную для хранения ссылки на объект Canvas.
+        if (GameObject.FindGameObjectWithTag("Canvas") == null) // Проверяет, существует ли объект с тегом "Canvas" в сцене.
         {
-            GameObject inventory = new GameObject();
-            inventory.name = "Inventories";
-            Canvas = (GameObject)Instantiate(Resources.Load("Prefabs/Canvas - Inventory") as GameObject);
-            Canvas.transform.SetParent(inventory.transform, true);
-            GameObject panel = (GameObject)Instantiate(Resources.Load("Prefabs/Panel - CraftSytem") as GameObject);
-            panel.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
-            panel.transform.SetParent(Canvas.transform, true);
-            GameObject draggingItem = (GameObject)Instantiate(Resources.Load("Prefabs/DraggingItem") as GameObject);
-            Instantiate(Resources.Load("Prefabs/EventSystem") as GameObject);
-            draggingItem.transform.SetParent(Canvas.transform, true);
-            panel.AddComponent<CraftSystem>();
+            GameObject inventory = new GameObject(); // Создает новый объект GameObject для хранения инвентаря.
+            inventory.name = "Inventories"; // Устанавливает имя для нового объекта инвентаря.
+            Canvas = (GameObject)Instantiate(Resources.Load("Prefabs/Canvas - Inventory") as GameObject); // Загружает префаб "Canvas - Inventory" из ресурсов и создает его экземпляр.
+            Canvas.transform.SetParent(inventory.transform, true); // Устанавливает родителя для Canvas как созданный объект inventory.
+            GameObject panel = (GameObject)Instantiate(Resources.Load("Prefabs/Panel - CraftSytem") as GameObject); // Загружает префаб "Panel - CraftSystem" и создает его экземпляр.
+            panel.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0); // Устанавливает локальную позицию панели в (0, 0, 0).
+            panel.transform.SetParent(Canvas.transform, true); // Устанавливает родителем панели созданный Canvas.
+            GameObject draggingItem = (GameObject)Instantiate(Resources.Load("Prefabs/DraggingItem") as GameObject); // Загружает префаб "DraggingItem" и создает его экземпляр.
+            Instantiate(Resources.Load("Prefabs/EventSystem") as GameObject); // Загружает и создает экземпляр префаба "EventSystem".
+            draggingItem.transform.SetParent(Canvas.transform, true); // Устанавливает родителем draggingItem созданный Canvas.
+            panel.AddComponent<CraftSystem>(); // Добавляет компонент CraftSystem к панели.
         }
-        else
+        else // Если Canvas уже существует в сцене
         {
-            GameObject panel = (GameObject)Instantiate(Resources.Load("Prefabs/Panel - CraftSystem") as GameObject);
-            panel.transform.SetParent(GameObject.FindGameObjectWithTag("Canvas").transform, true);
-            panel.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
-            panel.AddComponent<CraftSystem>();
-            DestroyImmediate(GameObject.FindGameObjectWithTag("DraggingItem"));
-            GameObject draggingItem = (GameObject)Instantiate(Resources.Load("Prefabs/DraggingItem") as GameObject);
-            draggingItem.transform.SetParent(GameObject.FindGameObjectWithTag("Canvas").transform, true);
+            GameObject panel = (GameObject)Instantiate(Resources.Load("Prefabs/Panel - CraftSystem") as GameObject); // Загружает префаб "Panel - CraftSystem" и создает его экземпляр.
+            panel.transform.SetParent(GameObject.FindGameObjectWithTag("Canvas").transform, true); // Устанавливает родителем панели существующий Canvas.
+            panel.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0); // Устанавливает локальную позицию панели в (0, 0, 0).
+            panel.AddComponent<CraftSystem>(); // Добавляет компонент CraftSystem к панели.
+            DestroyImmediate(GameObject.FindGameObjectWithTag("DraggingItem")); // Удаляет объект с тегом "DraggingItem" из сцены.
+            GameObject draggingItem = (GameObject)Instantiate(Resources.Load("Prefabs/DraggingItem") as GameObject); // Загружает префаб "DraggingItem" и создает его экземпляр.
+            draggingItem.transform.SetParent(GameObject.FindGameObjectWithTag("Canvas").transform, true); // Устанавливает родителем draggingItem существующий Canvas.
         }
     }
+
 #endif
 
     void Update()
