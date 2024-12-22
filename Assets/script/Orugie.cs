@@ -18,6 +18,10 @@ public class Orugie : MonoBehaviour // скрипт на стрельбу
     public int allAmmo; // все боеприпасы в наличии
     public int fullAmmo; //максимальное колличество пуль для переноса
 
+
+    public int chet; // переменная для метода вычета пуль из предмета
+
+
     private int lastItemID = 0; // Начальное значение, которое гарантированно не совпадет с валидным itemID
     private int lastItemValue = 0;
     [SerializeField]
@@ -88,11 +92,13 @@ public class Orugie : MonoBehaviour // скрипт на стрельбу
         {
             allAmmo = allAmmo - reason;
             currentAmmo = 15;
+            playerInventory.DecreaseAmmo(reason); // Уменьшаем количество патронов в инвентаре
         }
         else
         {
             currentAmmo = currentAmmo + allAmmo;
             allAmmo = 0;
+            playerInventory.DecreaseAmmo(reason);
         }
     }
     void Shoot()

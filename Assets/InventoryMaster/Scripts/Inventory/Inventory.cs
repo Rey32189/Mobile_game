@@ -659,19 +659,6 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
     }
 
 
-
-
-
-    
-
-
-
-
-
-
-
-
-
     public void addItemToInventoryStorage(int itemID, int value) // Метод для добавления предмета в хранилище
     {
         for (int i = 0; i < SlotContainer.transform.childCount; i++) // Проходим по всем слотам в контейнере

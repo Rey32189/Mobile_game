@@ -42,7 +42,7 @@ public class CraftSystem : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        blueprintDatabase = (BlueprintDatabase)Resources.Load("BlueprintDatabase");
+        blueprintDatabase = (BlueprintDatabase)Resources.Load("BlueprintDatabase"); // Загружаем ресурс с именем "BlueprintDatabase" из папки Resources и приводим его к типу BlueprintDatabase.
         //playerStatsScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
     }
 
@@ -144,44 +144,60 @@ public class CraftSystem : MonoBehaviour
 
     public void ListWithItem()
     {
+        // Открытие метода ListWithItem, который не возвращает значение и может быть вызван из других классов.
         itemInCraftSystem.Clear();
+        // Очистка списка itemInCraftSystem, чтобы удалить все предыдущие элементы.
         possibleItems.Clear();
+        // Очистка списка possibleItems, чтобы удалить все предыдущие возможные предметы.
         possibletoCreate.Clear();
+        // Очистка списка possibletoCreate, чтобы удалить все предыдущие данные о возможных созданиях.
         itemInCraftSystemGameObject.Clear();
-
+        // Очистка списка itemInCraftSystemGameObject, чтобы удалить все предыдущие игровые объекты.
         for (int i = 0; i < transform.GetChild(1).childCount; i++)
         {
+            // Цикл по всем дочерним элементам второго дочернего объекта текущего объекта (index 1).
             Transform trans = transform.GetChild(1).GetChild(i);
+            // Получение текущего дочернего объекта по индексу i.
             if (trans.childCount != 0)
             {
+                // Проверка, есть ли у текущего дочернего объекта дочерние элементы.
                 itemInCraftSystem.Add(trans.GetChild(0).GetComponent<ItemOnObject>().item);
+                // Добавление предмета из первого дочернего элемента текущего объекта в список itemInCraftSystem.
                 itemInCraftSystemGameObject.Add(trans.GetChild(0).gameObject);
+                // Добавление игрового объекта из первого дочернего элемента текущего объекта в список itemInCraftSystemGameObject.
             }
         }
 
         for (int k = 0; k < blueprintDatabase.blueprints.Count; k++)
         {
             int amountOfTrue = 0;
+            // Инициализация счетчика amountOfTrue для подсчета совпадений ингредиентов.
             for (int z = 0; z < blueprintDatabase.blueprints[k].ingredients.Count; z++)
             {
                 for (int d = 0; d < itemInCraftSystem.Count; d++)
                 {
                     if (blueprintDatabase.blueprints[k].ingredients[z] == itemInCraftSystem[d].itemID && blueprintDatabase.blueprints[k].amount[z] <= itemInCraftSystem[d].itemValue)
                     {
+                        // Проверка, совпадает ли текущий ингредиент с предметом в системе крафта и достаточно ли у него значений
                         amountOfTrue++;
+                        // Увеличение счетчика amountOfTrue на 1, если ингредиент найден.
                         break;
                     }
                 }
                 if (amountOfTrue == blueprintDatabase.blueprints[k].ingredients.Count)
                 {
+                    // Если количество совпадений равно количеству ингредиентов в чертеже...
                     possibleItems.Add(blueprintDatabase.blueprints[k].finalItem);
+                    // Добавление финального предмета из чертежа в список возможных предметов.
                     possibleItems[possibleItems.Count - 1].itemValue = blueprintDatabase.blueprints[k].amountOfFinalItem;
+                    // Установка значения финального предмета равным количеству, указанному в чертеже.
                     possibletoCreate.Add(true);
+                    // Добавление значения true в список возможных созданий, указывая, что этот предмет можно создать.
                 }
             }
         }
-
     }
+
 
     public void deleteItems(Item item)
     {

@@ -434,7 +434,6 @@ RectTransform:
   - {fileID: 57265134}
   - {fileID: 1258020038}
   - {fileID: 1709440234}
-  - {fileID: 896641297}
   - {fileID: 1413454066}
   m_Father: {fileID: 1445987551}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2394,6 +2393,7 @@ MonoBehaviour:
   currentAmmo: 15
   allAmmo: 0
   fullAmmo: 70
+  chet: 0
   ammoCount: {fileID: 1922587153}
 --- !u!114 &272302987
 MonoBehaviour:
@@ -3821,6 +3821,7 @@ MonoBehaviour:
   currentAmmo: 15
   allAmmo: 0
   fullAmmo: 25
+  chet: 0
   ammoCount: {fileID: 1922587153}
 --- !u!114 &432921653
 MonoBehaviour:
@@ -7209,6 +7210,7 @@ MonoBehaviour:
   currentAmmo: 15
   allAmmo: 0
   fullAmmo: 90
+  chet: 0
   ammoCount: {fileID: 1922587153}
 --- !u!114 &743761066
 MonoBehaviour:
@@ -9416,41 +9418,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 890097915}
   m_CullTransparentMesh: 1
---- !u!1 &896641296
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 896641297}
-  m_Layer: 0
-  m_Name: DraggingItem(Clone)
-  m_TagString: DraggingItem
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &896641297
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 896641296}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 56730500}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -960, y: -540}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &911408270
 GameObject:
   m_ObjectHideFlags: 0
@@ -9531,6 +9498,7 @@ MonoBehaviour:
   currentAmmo: 15
   allAmmo: 0
   fullAmmo: 25
+  chet: 0
   ammoCount: {fileID: 1922587153}
 --- !u!114 &911408275
 MonoBehaviour:
@@ -12030,10 +11998,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0db4493228a4ba442a891316e3ee246f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ammoItems: []
+  itemAmmo: []
+  itemDatabase: {fileID: 0}
   inventory: {fileID: 314194609}
   ammoinvetory: {fileID: 157048891}
   characterSystem: {fileID: 591367830}
   craftSystem: {fileID: 1997129839}
+  ammoInventory: {fileID: 0}
   itemIDWeapon: 0
   HPMANACanvas: {fileID: 1258020037}
   maxDamage: 200

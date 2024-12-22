@@ -8,11 +8,16 @@ using System.IO;
 using UnityEngine.SceneManagement;
 using static WeaponSwitcher;
 using static UnityEditor.Progress;
+using Unity.VisualScripting;
 
 public class PlayerInventory : MonoBehaviour
 {
 
-    private List<Item> ammoItems = new List<Item>(); // Список предметов, находящихся в инвентаре боеприпасов
+    public List<Item> ammoItems = new List<Item>(); // Список предметов, находящихся в инвентаре боеприпасов
+    public List<GameObject> itemAmmo = new List<GameObject>();
+
+    [SerializeField]
+    private ItemDataBaseList itemDatabase; // Ссылка на базу данных предметов
 
 
     public GameObject inventory; // Переменная для хранения ссылки на объект инвентаря
@@ -22,7 +27,7 @@ public class PlayerInventory : MonoBehaviour
     private Inventory craftSystemInventory; // Переменная для хранения инвентаря системы крафта
     private CraftSystem cS; // Переменная для хранения ссылки на систему крафта
     private Inventory mainInventory; // Переменная для хранения основного инвентаря
-    private Inventory ammoInventory; // Переменная для хранения основного инвентаря
+    public Inventory ammoInventory; // Переменная для хранения инвентаря боеприпасов
     private Inventory characterSystemInventory; // Переменная для хранения инвентаря системы персонажа
     private Tooltip toolTip; // Переменная для хранения ссылки на подсказку
             
@@ -86,7 +91,7 @@ public class PlayerInventory : MonoBehaviour
    
     }
     public int itemIDAmmo = -1;//переменная для хранения id боеприпасов
-    public int itemValueAmmo = 0;//переменная для хранения id боеприпасов
+    public int itemValueAmmo = 0;//переменная для хранения количества боеприпасов
 
 
     // Вложенный статический класс для обработки ItemID
@@ -96,11 +101,11 @@ public class PlayerInventory : MonoBehaviour
     }
     public int GetItemIDAmmo() //для возврата значения id патронов и дальнейшей его передачи
     {
-        return itemIDAmmo; // Возвращаем текущее значение itemID оружия
+        return itemIDAmmo; // Возвращаем текущее значение itemID патронов
     }
     public int GetItemValueAmmo() //для возврата значения колличества и дальнейшей его передачи
     {
-        return itemValueAmmo; // Возвращаем текущее значение itemID оружия
+        return itemValueAmmo; // Возвращаем текущее значение колличества патронов
     }
 
 
@@ -423,6 +428,66 @@ public class PlayerInventory : MonoBehaviour
 
     // Update is called once per frame
 
+
+    //public void AddItem(Item item)
+    //{
+    //    Создаем экземпляр игрового объекта
+    //    GameObject modelInstance = Instantiate(item.itemModel); // item.itemModel должен быть префабом
+    //    item.itemModel = modelInstance; // Сохраняем экземпляр в itemModel
+    //    ammoItems.Add(item);
+    //}
+
+    public void DeleteAmmo() //метод для удаления предмета из инфентаря боеприпасов
+    {
+        Debug.Log($"Делит аммо запустился");
+        for (int i = 0; i < ammoInventory.transform.childCount; i++) // Проходим по всем слотам в контейнере
+
+        {
+            Debug.Log($"супустился цикл фор в делит аммо");
+            if (ammoInventory.transform.GetChild(i).childCount != 0) // Если слот не пустой
+            {
+                Debug.Log($"должен запуститься дистрой");
+                Destroy(ammoInventory.transform.GetChild(i).GetChild(0).GetChild(0).gameObject); // Удаляем предмет из слота
+                break;
+            }
+        }
+        Debug.LogWarning("Патроны не найдены в инвентаре.");
+    }
+
+
+    // метод для уменьшения патрон после перезарядки
+    public void DecreaseAmmo(int amount)
+    {
+        if (ammoInventory.ItemsInInventory.Count > 0)
+        {
+            Item ammoItem = ammoInventory.ItemsInInventory[0]; // Получаем текущий предмет
+            Debug.Log($"Получен предмет после перезарядки {ammoItem.itemValue}");
+            if (ammoItem.itemValue >= amount)
+            {
+                ammoItem.itemValue -= amount; // Уменьшаем количество патронов
+                Debug.Log($"уменьшено колличество патрон {ammoItem.itemValue}");
+                if (ammoItem.itemValue == 0 )
+                {
+                    Debug.Log($"предмет равен 0 {ammoItem.itemValue}");
+                    if (ammoItem.itemModel != null)
+                    {
+                        DeleteAmmo();
+                        Debug.Log("запущен делит аммо");
+                    }
+                   // ammoInventory.ItemsInInventory.Remove(ammoItem); // Удаляем его из инвентаря
+                    Debug.Log("тут  должен был удалить предмет из инвентаря");
+                    
+                }
+            }
+            else
+            {
+                Debug.LogWarning("удаление патрон не вышло");
+            }
+        }
+    }
+
+
+
     void Update() // Метод, вызываемый каждый кадр
     {
 
@@ -453,6 +518,8 @@ public class PlayerInventory : MonoBehaviour
                 Debug.Log("Ammo Inventory is empty, reset values.");
             }
         }
+
+       
 
 
         //CheckAmmoInventory();
