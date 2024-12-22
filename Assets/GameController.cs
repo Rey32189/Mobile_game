@@ -6,6 +6,7 @@ public class GameController : MonoBehaviour
 {
     public Inventory inventoryOne;
     public Inventory inventoryFig;
+    public Inventory inventoryEqip;
 
     public void OnSaveOneButtonClicked()
     {
@@ -25,6 +26,15 @@ public class GameController : MonoBehaviour
     public void OnLoadFigButtonClicked()
     {
         StartCoroutine(inventoryFig.LoadInventoryCoroutine("Fig"));
+    }
+    public void OnSaveEqipButtonClicked()
+    {
+        inventoryEqip.SaveInventory("Eqip");
+    }
+
+    public void OnLoadEqipButtonClicked()
+    {
+        StartCoroutine(inventoryEqip.LoadInventoryCoroutine("Eqip"));
     }
 
 }

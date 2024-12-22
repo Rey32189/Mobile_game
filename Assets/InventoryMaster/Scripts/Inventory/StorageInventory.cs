@@ -106,16 +106,6 @@ public class StorageInventory : MonoBehaviour // Определение клас
     // Метод, вызываемый каждый кадр.
     void Update()
     {
-        //if (Input.GetKeyDown(KeyCode.S)) // Например, с комбинацией Shift
-        //{
-        //    SaveStorageInventory();
-        //}
-
-        ////Загрузка инвентаря сундука
-        //if (Input.GetKeyDown(KeyCode.L)) // Например, с комбинацией Shift
-        //{
-        //    LoadStorageInventory();
-        //}
 
 
         float distance = Vector3.Distance(this.gameObject.transform.position, player.transform.position); // Вычисление расстояния до игрока.
@@ -202,62 +192,5 @@ public class StorageInventory : MonoBehaviour // Определение клас
         iV.stackableSettings(); // Настройка предметов на возможность складывания (если это предусмотрено).
     }
 
-    //private string inventoryFilePath;
-
-    //void Awake()
-    //{
-    //    // Устанавливаем путь к файлу для сохранения инвентаря
-    //    inventoryFilePath = Path.Combine(Application.persistentDataPath, "sunduk.json");
-    //}
-    //public void SaveStorageInventory()
-    //{
-    //    CombinedInventoryData combinedData = new CombinedInventoryData();
-    //    combinedData.chestInventory = new CombinedInventoryData.InventoryData();
-    //    combinedData.chestInventory.items = new List<CombinedInventoryData.InventoryData.ItemData>();
-
-    //    foreach (var item in storageItems)
-    //    {
-    //        CombinedInventoryData.InventoryData.ItemData itemData = new CombinedInventoryData.InventoryData.ItemData
-    //        {
-    //            itemID = item.itemID,
-    //            itemValue = item.itemValue
-    //        };
-    //        combinedData.chestInventory.items.Add(itemData);
-    //    }
-
-    //    // Сохранение данных в файл
-    //    string json = JsonUtility.ToJson(combinedData, true);
-    //    File.WriteAllText(inventoryFilePath, json);
-    //    Debug.Log("Chest inventory saved to " + inventoryFilePath);
-    //}
-
-    //public IEnumerator LoadStorageInventoryCoroutine()
-    //{
-    //    if (File.Exists(inventoryFilePath))
-    //    {
-    //        storageItems.Clear(); // Очищаем список предметов в сундуке
-
-    //        // Задержка для обновления UI
-    //        yield return new WaitForEndOfFrame();
-
-    //        string json = File.ReadAllText(inventoryFilePath);
-    //        CombinedInventoryData combinedData = JsonUtility.FromJson<CombinedInventoryData>(json);
-
-    //        // Добавляем предметы в инвентарь сундука
-    //        foreach (var itemData in combinedData.chestInventory.items)
-    //        {
-    //            addItemToStorage(itemData.itemID, itemData.itemValue);
-    //        }
-
-    //        Debug.Log("Chest inventory loaded from " + inventoryFilePath);
-    //    }
-    //    else
-    //    {
-    //        Debug.LogWarning("No inventory file found at " + inventoryFilePath);
-    //    }
-    //}
-    //public void LoadStorageInventory()
-    //{
-    //    StartCoroutine(LoadStorageInventoryCoroutine());
-    //}
+    
 }

@@ -106,6 +106,7 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
             this.gameObject.SetActive(false); // Если нет, отключаем объект инвентаря
 
         updateItemList(); // Обновляем список предметов в инвентаре
+       
 
         inputManagerDatabase = (InputManager)Resources.Load("InputManager"); // Загружаем менеджер ввода из ресурсов
     }
@@ -133,6 +134,10 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
             }
         }
     }
+  
+
+
+
 
     void Update() // Метод, вызываемый каждый кадр
     {
@@ -236,7 +241,7 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
             panel.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0); // Устанавливаем позицию панели в (0, 0, 0)
             Inventory temp = panel.AddComponent<Inventory>(); // Добавляем компонент Inventory к панели
             panel.AddComponent<InventoryDesign>(); // Добавляем компонент InventoryDesign к панели
-            DestroyImmediate(GameObject.FindGameObjectWithTag("DraggingItem")); // Уничтожаем существующий объект перетаскиваемого предмета
+            Destroy(GameObject.FindGameObjectWithTag("DraggingItem")); // Уничтожаем существующий объект перетаскиваемого предмета
             GameObject draggingItem = (GameObject)Instantiate(Resources.Load("Prefabs/DraggingItem") as GameObject); // Загружаем и создаем новый объект для перетаскиваемого предмета
             draggingItem.transform.SetParent(GameObject.FindGameObjectWithTag("Canvas").transform, true); // Устанавливаем его как дочерний объект канваса
             temp.getPrefabs(); // Вызываем метод для получения префабов
@@ -290,6 +295,8 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
                 ItemsInInventory.Add(trans.GetChild(0).GetComponent<ItemOnObject>().item);
             }
         }
+        stackableSettings();
+       
     }
 
     public bool characterSystem() // Метод для проверки наличия системы персонажа
@@ -410,7 +417,7 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
                 ItemsInInventory.Remove(itemInSlot.item); // Удаляем предмет из инвентаря
             }
             slotList.Remove(go); // Удаляем слот из списка
-            DestroyImmediate(go); // Уничтожаем слот
+            Destroy(go); // Уничтожаем слот
         }
 
         // Добавляем новые слоты, если их недостаточно
@@ -566,7 +573,7 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
                 }
             }
         }
-        stackableSettings(); // Настраиваем отображение предметов в стеке
+       
         updateItemList(); // Обновляем список предметов в инвентаре
     }
 
@@ -593,6 +600,8 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
         return false; // Возвращаем false, если предмет не найден
     }
 
+
+
     public void addItemToInventory(int id) // Метод для добавления предмета в инвентарь по ID
     {
         for (int i = 0; i < SlotContainer.transform.childCount; i++) // Проходим по всем слотам в контейнере
@@ -605,16 +614,21 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
                 item.GetComponent<RectTransform>().localPosition = Vector3.zero; // Устанавливаем локальную позицию предмета в (0, 0, 0)
                 item.transform.GetChild(0).GetComponent<Image>().sprite = item.GetComponent<ItemOnObject>().item.itemIcon; // Устанавливаем иконку предмета
                 item.GetComponent<ItemOnObject>().item.indexItemInList = ItemsInInventory.Count - 1; // Устанавливаем индекс предмета в списке инвентаря
-                break; // Выходим из цикла, так как предмет добавлен
+                break; // Выходим из цикла, так как предмет добавлен 
+
             }
+
         }
 
-        stackableSettings(); // Обновляем настройки для стекуемых предметов
+
         updateItemList(); // Обновляем список предметов в инвентаре
+       
     }
+
 
     public GameObject addItemToInventory(int id, int value) // Метод для добавления предмета в инвентарь с заданным значением
     {
+
         for (int i = 0; i < SlotContainer.transform.childCount; i++) // Проходим по всем слотам в контейнере
         {
             if (SlotContainer.transform.GetChild(i).childCount == 0) // Если слот пустой
@@ -634,13 +648,16 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
                 if (inputManagerDatabase == null) // Проверяем, загружен ли InputManager
                     inputManagerDatabase = (InputManager)Resources.Load("InputManager"); // Загружаем InputManager, если он не загружен
                 return item; // Возвращаем созданный объект предмета
+
             }
         }
 
-        stackableSettings(); // Обновляем настройки для стекуемых предметов
+
         updateItemList(); // Обновляем список предметов в инвентаре
+        
         return null; // Возвращаем null, если не удалось добавить предмет
     }
+
 
     public void addItemToInventoryStorage(int itemID, int value) // Метод для добавления предмета в хранилище
     {
@@ -666,8 +683,10 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
                 break; // Выходим из цикла, так как предмет добавлен
             }
         }
-        stackableSettings(); // Обновляем настройки для стекуемых предметов
+     
         updateItemList(); // Обновляем список предметов в инвентаре
+
+
     }
 
     public void updateIconSize(int iconSize) // Метод для обновления размера иконок
@@ -724,6 +743,8 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
         }
         ItemsInInventory.Clear(); // Очистка списка предметов
         updateItemList(); // Обновляем список предметов в инвентаре
+
+        
     }
 
     public List<Item> getItemList() // Метод для получения списка предметов в инвентаре
@@ -814,6 +835,8 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
                 ItemsInInventory.RemoveAt(item.indexItemInList); // Удаляем его из списка
         }
         updateItemList(); // Обновляем список предметов в инвентаре
+
+        
     }
 
     public void deleteItemFromInventory(Item item) // Метод для удаления предмета из инвентаря
@@ -824,6 +847,8 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
                 ItemsInInventory.RemoveAt(i); // Удаляем его из списка
         }
         updateItemList(); // Обновляем список предметов в инвентаре
+
+        
     }
 
     public void deleteItemFromInventoryWithGameObject(Item item) // Метод для удаления предмета из инвентаря и игрового объекта
@@ -866,30 +891,67 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
         return -1; // Возвращаем -1, если предмет не найден
     }
 
-    public void addItemToInventory(int ignoreSlot, int itemID, int itemValue) // Метод для добавления предмета в инвентарь с игнорированием указанного слота
+    //public void addItemToInventory(int ignoreSlot, int itemID, int itemValue) // Метод для добавления предмета в инвентарь с игнорированием указанного слота
+    //{
+    //    for (int i = 0; i < SlotContainer.transform.childCount; i++) // Проходим по всем слотам в контейнере
+    //    {
+    //        if (SlotContainer.transform.GetChild(i).childCount == 0 && i != ignoreSlot) // Если слот пустой и не является игнорируемым
+    //        {
+    //            GameObject item = (GameObject)Instantiate(prefabItem); // Создаем новый объект предмета
+    //            ItemOnObject itemOnObject = item.GetComponent<ItemOnObject>(); // Получаем компонент ItemOnObject
+    //            itemOnObject.item = itemDatabase.getItemByID(itemID); // Получаем предмет из базы данных по ID
+    //            if (itemOnObject.item.itemValue < itemOnObject.item.maxStack && itemValue <= itemOnObject.item.maxStack) // Проверяем, можно ли установить заданное значение предмета
+    //                itemOnObject.item.itemValue = itemValue; // Устанавливаем значение предмета
+    //            else
+    //                itemOnObject.item.itemValue = 1; // Если значение превышает максимум, устанавливаем 1
+    //            item.transform.SetParent(SlotContainer.transform.GetChild(i)); // Устанавливаем слот как родитель для предмета
+    //            item.GetComponent<RectTransform>().localPosition = Vector3.zero; // Устанавливаем локальную позицию предмета в (0, 0, 0)
+    //            itemOnObject.item.indexItemInList = 999; // Устанавливаем индекс предмета в списке как 999 (для хранения)
+    //            updateItemSize(); // Обновляем размер предметов в инвентаре
+    //            stackableSettings(); // Обновляем настройки для стекуемых предметов
+    //            break; // Выходим из цикла, так как предмет добавлен
+    //        }
+    //    }
+    //    stackableSettings(); // Обновляем настройки для стекуемых предметов
+    //    updateItemList(); // Обновляем список предметов в инвентаре
+    //}
+
+    public void addItemToInventory(int slotIndex, int itemID, int itemValue) // Метод вместо игнорирования, размещает предметы в соответствии со слотом
     {
-        for (int i = 0; i < SlotContainer.transform.childCount; i++) // Проходим по всем слотам в контейнере
+        if (slotIndex < 0 || slotIndex >= SlotContainer.transform.childCount) // Проверяем, что индекс слота находится в допустимых пределах
         {
-            if (SlotContainer.transform.GetChild(i).childCount == 0 && i != ignoreSlot) // Если слот пустой и не является игнорируемым
-            {
-                GameObject item = (GameObject)Instantiate(prefabItem); // Создаем новый объект предмета
-                ItemOnObject itemOnObject = item.GetComponent<ItemOnObject>(); // Получаем компонент ItemOnObject
-                itemOnObject.item = itemDatabase.getItemByID(itemID); // Получаем предмет из базы данных по ID
-                if (itemOnObject.item.itemValue < itemOnObject.item.maxStack && itemValue <= itemOnObject.item.maxStack) // Проверяем, можно ли установить заданное значение предмета
-                    itemOnObject.item.itemValue = itemValue; // Устанавливаем значение предмета
-                else
-                    itemOnObject.item.itemValue = 1; // Если значение превышает максимум, устанавливаем 1
-                item.transform.SetParent(SlotContainer.transform.GetChild(i)); // Устанавливаем слот как родитель для предмета
-                item.GetComponent<RectTransform>().localPosition = Vector3.zero; // Устанавливаем локальную позицию предмета в (0, 0, 0)
-                itemOnObject.item.indexItemInList = 999; // Устанавливаем индекс предмета в списке как 999 (для хранения)
-                updateItemSize(); // Обновляем размер предметов в инвентаре
-                stackableSettings(); // Обновляем настройки для стекуемых предметов
-                break; // Выходим из цикла, так как предмет добавлен
-            }
+            Debug.LogError("Invalid slot index: " + slotIndex); // Если индекс недопустим, выводим сообщение об ошибке в консоль
+            return; // Прерываем выполнение метода, так как индекс слота неверный
         }
-        stackableSettings(); // Обновляем настройки для стекуемых предметов
+
+        GameObject item = Instantiate(prefabItem); // Создаем новый объект предмета из префаба
+        ItemOnObject itemOnObject = item.GetComponent<ItemOnObject>(); // Получаем компонент ItemOnObject из созданного объекта
+        itemOnObject.item = itemDatabase.getItemByID(itemID); // Получаем предмет из базы данных по его идентификатору и присваиваем его объекту
+
+        // Проверяем, можно ли установить заданное значение предмета
+        if (itemOnObject.item.itemValue < itemOnObject.item.maxStack && itemValue <= itemOnObject.item.maxStack)
+        {
+            itemOnObject.item.itemValue = itemValue; // Устанавливаем значение предмета
+        }
+        else
+        {
+            itemOnObject.item.itemValue = 1; // Если значение превышает максимум, устанавливаем 1
+        }
+
+        // Устанавливаем родительский объект для нового предмета в указанный слот
+        item.transform.SetParent(SlotContainer.transform.GetChild(slotIndex));
+        item.GetComponent<RectTransform>().localPosition = Vector3.zero; // Устанавливаем позицию предмета в слоте в ноль (центрируем)
+        itemOnObject.item.indexItemInList = 999; // Устанавливаем индекс предмета в списке как 999 (для хранения)
+
+        updateItemSize(); // Обновляем интерфейс, чтобы отобразить изменения
+
         updateItemList(); // Обновляем список предметов в инвентаре
+
+        
     }
+
+
+
 
     public void updateItemIndex() // Метод для обновления индексов предметов в инвентаре
     {
@@ -912,20 +974,41 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
     {
         return Path.Combine(Application.persistentDataPath, $"{inventoryName}_inventory.json");
     }
+
+    [System.Serializable]
+    public class InventoryData
+    {
+        [System.Serializable]
+        public class ItemData
+        {
+            public int itemID;
+            public int itemValue;
+            public int slotIndex; // Индекс слота
+        }
+        public List<ItemData> items = new List<ItemData>(); // Убедитесь, что это инициализировано
+    }
+
+    // Изменения в методе SaveInventory
     public void SaveInventory(string inventoryName)
     {
         updateItemList();
         InventoryData inventoryData = new InventoryData();
         inventoryData.items = new List<InventoryData.ItemData>();
 
-        foreach (var item in ItemsInInventory)
+        for (int i = 0; i < SlotContainer.transform.childCount; i++)
         {
-            InventoryData.ItemData itemData = new InventoryData.ItemData
+            if (SlotContainer.transform.GetChild(i).childCount > 0)
             {
-                itemID = item.itemID,
-                itemValue = item.itemValue
-            };
-            inventoryData.items.Add(itemData);
+                Item item = SlotContainer.transform.GetChild(i).GetChild(0).GetComponent<ItemOnObject>().item;
+
+                InventoryData.ItemData itemData = new InventoryData.ItemData
+                {
+                    itemID = item.itemID,
+                    itemValue = item.itemValue,
+                    slotIndex = i // Сохраняем индекс слота
+                };
+                inventoryData.items.Add(itemData);
+            }
         }
 
         string inventoryFilePath = Path.Combine(Application.persistentDataPath, $"{inventoryName}.json");
@@ -949,13 +1032,20 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
             string json = File.ReadAllText(inventoryFilePath);
             InventoryData inventoryData = JsonUtility.FromJson<InventoryData>(json);
 
-            // Добавляем предметы в инвентарь
             foreach (var itemData in inventoryData.items)
             {
-                addItemToInventory(itemData.itemID, itemData.itemValue);
+                Debug.Log($"Loading item ID: {itemData.itemID} into slot index: {itemData.slotIndex}");
+                addItemToInventory(itemData.slotIndex, itemData.itemID, itemData.itemValue);
+                Item loadedItem = itemDatabase.getItemByID(itemData.itemID); // Получаем загруженный предмет из базы данных
+                if (loadedItem != null)
+                {
+                    EquiptItem(loadedItem); // Применяем атрибуты предмета к персонажу
+                }
             }
-
             updateItemList(); // Обновляем визуальные слоты после загрузки
+            updateItemSize();            // Обновляем интерфейс, чтобы отобразить изменения
+            stackableSettings(); // Применяем настройки для предметов, которые могут быть сложены
+            updateItemIndex(); // Метод для обновления индексов предметов в инвентаре
             Debug.Log($"Inventory '{inventoryName}' loaded from " + inventoryFilePath);
         }
         else
@@ -965,11 +1055,14 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
     }
 
 
+    
 
-    //public void LoadInventory()
-    //{
-    //    StartCoroutine(LoadInventoryCoroutine());
-    //}
+
+
+
+
+
+
 }
 
-    
+

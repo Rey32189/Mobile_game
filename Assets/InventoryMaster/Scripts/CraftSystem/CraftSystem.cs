@@ -42,40 +42,41 @@ public class CraftSystem : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        blueprintDatabase = (BlueprintDatabase)Resources.Load("BlueprintDatabase");
+        blueprintDatabase = (BlueprintDatabase)Resources.Load("BlueprintDatabase"); // Загружаем ресурс с именем "BlueprintDatabase" из папки Resources и приводим его к типу BlueprintDatabase.
         //playerStatsScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
     }
 
 #if UNITY_EDITOR
-    [MenuItem("Master System/Create/Craft System")]
-    public static void menuItemCreateInventory()
+    [MenuItem("Master System/Create/Craft System")] // Создает пункт меню в редакторе Unity для вызова метода menuItemCreateInventory.
+    public static void menuItemCreateInventory() // Определяет статический метод, который будет вызываться при выборе пункта меню.
     {
-        GameObject Canvas = null;
-        if (GameObject.FindGameObjectWithTag("Canvas") == null)
+        GameObject Canvas = null; // Инициализирует переменную для хранения ссылки на объект Canvas.
+        if (GameObject.FindGameObjectWithTag("Canvas") == null) // Проверяет, существует ли объект с тегом "Canvas" в сцене.
         {
-            GameObject inventory = new GameObject();
-            inventory.name = "Inventories";
-            Canvas = (GameObject)Instantiate(Resources.Load("Prefabs/Canvas - Inventory") as GameObject);
-            Canvas.transform.SetParent(inventory.transform, true);
-            GameObject panel = (GameObject)Instantiate(Resources.Load("Prefabs/Panel - CraftSytem") as GameObject);
-            panel.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
-            panel.transform.SetParent(Canvas.transform, true);
-            GameObject draggingItem = (GameObject)Instantiate(Resources.Load("Prefabs/DraggingItem") as GameObject);
-            Instantiate(Resources.Load("Prefabs/EventSystem") as GameObject);
-            draggingItem.transform.SetParent(Canvas.transform, true);
-            panel.AddComponent<CraftSystem>();
+            GameObject inventory = new GameObject(); // Создает новый объект GameObject для хранения инвентаря.
+            inventory.name = "Inventories"; // Устанавливает имя для нового объекта инвентаря.
+            Canvas = (GameObject)Instantiate(Resources.Load("Prefabs/Canvas - Inventory") as GameObject); // Загружает префаб "Canvas - Inventory" из ресурсов и создает его экземпляр.
+            Canvas.transform.SetParent(inventory.transform, true); // Устанавливает родителя для Canvas как созданный объект inventory.
+            GameObject panel = (GameObject)Instantiate(Resources.Load("Prefabs/Panel - CraftSytem") as GameObject); // Загружает префаб "Panel - CraftSystem" и создает его экземпляр.
+            panel.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0); // Устанавливает локальную позицию панели в (0, 0, 0).
+            panel.transform.SetParent(Canvas.transform, true); // Устанавливает родителем панели созданный Canvas.
+            GameObject draggingItem = (GameObject)Instantiate(Resources.Load("Prefabs/DraggingItem") as GameObject); // Загружает префаб "DraggingItem" и создает его экземпляр.
+            Instantiate(Resources.Load("Prefabs/EventSystem") as GameObject); // Загружает и создает экземпляр префаба "EventSystem".
+            draggingItem.transform.SetParent(Canvas.transform, true); // Устанавливает родителем draggingItem созданный Canvas.
+            panel.AddComponent<CraftSystem>(); // Добавляет компонент CraftSystem к панели.
         }
-        else
+        else // Если Canvas уже существует в сцене
         {
-            GameObject panel = (GameObject)Instantiate(Resources.Load("Prefabs/Panel - CraftSystem") as GameObject);
-            panel.transform.SetParent(GameObject.FindGameObjectWithTag("Canvas").transform, true);
-            panel.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
-            panel.AddComponent<CraftSystem>();
-            DestroyImmediate(GameObject.FindGameObjectWithTag("DraggingItem"));
-            GameObject draggingItem = (GameObject)Instantiate(Resources.Load("Prefabs/DraggingItem") as GameObject);
-            draggingItem.transform.SetParent(GameObject.FindGameObjectWithTag("Canvas").transform, true);
+            GameObject panel = (GameObject)Instantiate(Resources.Load("Prefabs/Panel - CraftSystem") as GameObject); // Загружает префаб "Panel - CraftSystem" и создает его экземпляр.
+            panel.transform.SetParent(GameObject.FindGameObjectWithTag("Canvas").transform, true); // Устанавливает родителем панели существующий Canvas.
+            panel.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0); // Устанавливает локальную позицию панели в (0, 0, 0).
+            panel.AddComponent<CraftSystem>(); // Добавляет компонент CraftSystem к панели.
+            DestroyImmediate(GameObject.FindGameObjectWithTag("DraggingItem")); // Удаляет объект с тегом "DraggingItem" из сцены.
+            GameObject draggingItem = (GameObject)Instantiate(Resources.Load("Prefabs/DraggingItem") as GameObject); // Загружает префаб "DraggingItem" и создает его экземпляр.
+            draggingItem.transform.SetParent(GameObject.FindGameObjectWithTag("Canvas").transform, true); // Устанавливает родителем draggingItem существующий Canvas.
         }
     }
+
 #endif
 
     void Update()
@@ -143,44 +144,60 @@ public class CraftSystem : MonoBehaviour
 
     public void ListWithItem()
     {
+        // Открытие метода ListWithItem, который не возвращает значение и может быть вызван из других классов.
         itemInCraftSystem.Clear();
+        // Очистка списка itemInCraftSystem, чтобы удалить все предыдущие элементы.
         possibleItems.Clear();
+        // Очистка списка possibleItems, чтобы удалить все предыдущие возможные предметы.
         possibletoCreate.Clear();
+        // Очистка списка possibletoCreate, чтобы удалить все предыдущие данные о возможных созданиях.
         itemInCraftSystemGameObject.Clear();
-
+        // Очистка списка itemInCraftSystemGameObject, чтобы удалить все предыдущие игровые объекты.
         for (int i = 0; i < transform.GetChild(1).childCount; i++)
         {
+            // Цикл по всем дочерним элементам второго дочернего объекта текущего объекта (index 1).
             Transform trans = transform.GetChild(1).GetChild(i);
+            // Получение текущего дочернего объекта по индексу i.
             if (trans.childCount != 0)
             {
+                // Проверка, есть ли у текущего дочернего объекта дочерние элементы.
                 itemInCraftSystem.Add(trans.GetChild(0).GetComponent<ItemOnObject>().item);
+                // Добавление предмета из первого дочернего элемента текущего объекта в список itemInCraftSystem.
                 itemInCraftSystemGameObject.Add(trans.GetChild(0).gameObject);
+                // Добавление игрового объекта из первого дочернего элемента текущего объекта в список itemInCraftSystemGameObject.
             }
         }
 
         for (int k = 0; k < blueprintDatabase.blueprints.Count; k++)
         {
             int amountOfTrue = 0;
+            // Инициализация счетчика amountOfTrue для подсчета совпадений ингредиентов.
             for (int z = 0; z < blueprintDatabase.blueprints[k].ingredients.Count; z++)
             {
                 for (int d = 0; d < itemInCraftSystem.Count; d++)
                 {
                     if (blueprintDatabase.blueprints[k].ingredients[z] == itemInCraftSystem[d].itemID && blueprintDatabase.blueprints[k].amount[z] <= itemInCraftSystem[d].itemValue)
                     {
+                        // Проверка, совпадает ли текущий ингредиент с предметом в системе крафта и достаточно ли у него значений
                         amountOfTrue++;
+                        // Увеличение счетчика amountOfTrue на 1, если ингредиент найден.
                         break;
                     }
                 }
                 if (amountOfTrue == blueprintDatabase.blueprints[k].ingredients.Count)
                 {
+                    // Если количество совпадений равно количеству ингредиентов в чертеже...
                     possibleItems.Add(blueprintDatabase.blueprints[k].finalItem);
+                    // Добавление финального предмета из чертежа в список возможных предметов.
                     possibleItems[possibleItems.Count - 1].itemValue = blueprintDatabase.blueprints[k].amountOfFinalItem;
+                    // Установка значения финального предмета равным количеству, указанному в чертеже.
                     possibletoCreate.Add(true);
+                    // Добавление значения true в список возможных созданий, указывая, что этот предмет можно создать.
                 }
             }
         }
-
     }
+
 
     public void deleteItems(Item item)
     {
