@@ -22,7 +22,7 @@ public class CameraController : MonoBehaviour
         // Увеличиваем размер ортографической камеры
         if (mainCamera != null && mainCamera.orthographic)
         {
-            mainCamera.orthographicSize = distansCamera; // увеличено значение size
+            mainCamera.orthographicSize = distansCamera; // увеличено значение size для удаления или приближения камеры
         }
 
     }
@@ -45,24 +45,63 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //if (player)
+        //{
+        //    int currentX = Mathf.RoundToInt(player.position.x);
+        //    if (currentX > lastX) isLeft = false; else if (currentX < lastX) isLeft = true;
+        //    lastX = Mathf.RoundToInt(player.position.x);
+
+        //    Vector3 target;
+        //    if (isLeft)
+        //    {
+        //        target = new Vector3(player.position.x - offset.x, player.position.y + offset.y, transform.position.z);
+        //    }
+        //    else
+        //    {
+        //        target = new Vector3(player.position.x + offset.x, player.position.y + offset.y, transform.position.z); //  player.position.z + offset.z) если захочу что бы двигалась по z
+        //    }
+
+        //    Vector3 currentPosition = Vector3.Lerp(transform.position, target, dumping * Time.deltaTime);
+        //    transform .position = currentPosition;
+        //}
+
+
+
         if (player)
         {
             int currentX = Mathf.RoundToInt(player.position.x);
-            if (currentX > lastX) isLeft = false; else if (currentX < lastX) isLeft = true;
-            lastX = Mathf.RoundToInt(player.position.x);
+            if (currentX > lastX)
+            {
+                isLeft = false; // персонаж смотрит вправо
+            }
+            else if (currentX < lastX)
+            {
+                isLeft = true; // персонаж смотрит влево
+            }
+            lastX = currentX;
 
+            // Обновляем целевую позицию камеры
             Vector3 target;
             if (isLeft)
             {
-                target = new Vector3(player.position.x - offset.x, player.position.y + offset.y, transform.position.z);
+                target = new Vector3(
+                    player.position.x - offset.x,
+                    player.position.y + offset.y,
+                    player.position.z + offset.z // Учитываем позицию по оси Z
+                );
             }
             else
             {
-                target = new Vector3(player.position.x + offset.x, player.position.y + offset.y, transform.position.z); //  player.position.z + offset.z) если захочу что бы двигалась по z
+                target = new Vector3(
+                    player.position.x + offset.x,
+                    player.position.y + offset.y,
+                    player.position.z + offset.z // Учитываем позицию по оси Z
+                );
             }
 
+            // Плавно перемещаем камеру к целевой позиции
             Vector3 currentPosition = Vector3.Lerp(transform.position, target, dumping * Time.deltaTime);
-            transform .position = currentPosition;
+            transform.position = currentPosition;
         }
     }
 }

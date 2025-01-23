@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 [System.Serializable]
 public class Item
@@ -37,9 +38,22 @@ public class Item
     public Item getCopy()
     {
         return (Item)this.MemberwiseClone();        
-    }   
-    
-    
+    }
+
+    // Метод глубокого клонирования
+    public Item getDeepCopy()
+    {
+        Item newItem = (Item)this.MemberwiseClone(); // Создаем поверхностную копию
+
+        // Глубокое клонирование списка itemAttributes
+        newItem.itemAttributes = new List<ItemAttribute>();
+        foreach (var attribute in this.itemAttributes)
+        {
+            newItem.itemAttributes.Add(attribute.Clone()); // Предполагается, что ItemAttribute имеет метод Clone()
+        }
+
+        return newItem;
+    }
 }
 
 

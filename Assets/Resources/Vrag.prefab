@@ -273,7 +273,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5065e82084aeba4f97881d17d66fd57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 1
+  speed: 0
   positionOfPatrol: 4
   point2: {x: 5, y: 1, z: 0}
   stoppingDistance: 8
@@ -289,6 +289,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5b82ea1587e6ea40a5d2ac12e914116, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  disappearingWall: {fileID: 0}
+  nomer_stens: 1
   health: 2
   timeDestroy: 2
   spavnPos: {x: -9, y: 1, z: 0}
@@ -305,18 +307,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lootTable:
-  - itemPrefab: {fileID: 4046431659008747637, guid: 138bcf3f05934f54c9e8ee833303b0a7, type: 3}
-    dropChance: 0.5
+  - itemID: 12
+    dropChance: 1
     forceRange: {x: 10, y: 0, z: 10}
-  - itemPrefab: {fileID: 4046431659008747637, guid: 138bcf3f05934f54c9e8ee833303b0a7, type: 3}
+    minDropAmount: 1
+    maxDropAmount: 9
+  - itemID: 0
     dropChance: 0.3
     forceRange: {x: 10, y: 0, z: 10}
-  - itemPrefab: {fileID: 4046431659008747637, guid: 138bcf3f05934f54c9e8ee833303b0a7, type: 3}
+    minDropAmount: 0
+    maxDropAmount: 0
+  - itemID: 0
     dropChance: 0.3
     forceRange: {x: 10, y: 0, z: 10}
-  - itemPrefab: {fileID: 4046431659008747637, guid: 138bcf3f05934f54c9e8ee833303b0a7, type: 3}
+    minDropAmount: 0
+    maxDropAmount: 0
+  - itemID: 0
     dropChance: 0.3
     forceRange: {x: 10, y: 0, z: 10}
+    minDropAmount: 0
+    maxDropAmount: 0
   maxDrops: 3
 --- !u!1 &5817633476044361686
 GameObject:

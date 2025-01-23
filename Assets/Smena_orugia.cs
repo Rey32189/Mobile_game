@@ -52,17 +52,19 @@ public class WeaponSwitcher : MonoBehaviour
         Debug.Log("В метод SetWeaponByItemID отправлен " + itemID);
         if (itemID == 23) // ID 23 соответствует автомату
         {
+            Debug.Log("Установлен номер 1 ");
             weaponNumber = 1;
         }
-        else if (itemID == 2) // ID 2 соответствует пистолету
+        else if (itemID == 9) // ID 2 соответствует пистолету
         {
+            Debug.Log("Установлен номер 2 ");
             weaponNumber = 2;
         }
         else
         {
             weaponNumber = 0; // Неизвестное оружие
         }
-
+        Debug.Log("установили спрайт ");
         // Обновляем спрайт сразу после изменения weaponNumber
         UpdateWeaponSprite();
     }

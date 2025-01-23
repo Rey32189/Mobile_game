@@ -402,6 +402,7 @@
 "Assets/script/Dvig/Patrul.cs"
 "Assets/script/Dvig/Upravlenie.cs"
 "Assets/script/Enemy.cs"
+"Assets/script/Icheznovenie_sten.cs"
 "Assets/script/LootDropper.cs"
 "Assets/script/Orugie.cs"
 "Assets/script/pistolClic.cs"

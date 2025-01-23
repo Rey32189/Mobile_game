@@ -73,6 +73,7 @@
     <Compile Include="Assets\script\pistolClic.cs" />
     <Compile Include="Assets\InventoryMaster\Scripts\Item\SlotCover.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\EnvMapAnimator.cs" />
+    <Compile Include="Assets\script\Icheznovenie_sten.cs" />
     <Compile Include="Assets\InventoryMaster\Scripts\Hotbar\Hotbar.cs" />
     <Compile Include="Assets\script\LootDropper.cs" />
     <Compile Include="Assets\script\Dvig\CameraController.cs" />

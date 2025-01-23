@@ -174,7 +174,7 @@ public class PlayerInventory : MonoBehaviour
 
     void UnEquipAmmo(Item item) // Метод для разэкипировки боеприпасов
     {
-        if (item.itemType == ItemType.Ammo) // Проверяем, является ли предмет оружием
+        if (item.itemType == ItemType.Ammo) // Проверяем, является ли предмет боеприпасом
         {
             for (int i = 0; i < item.itemAttributes.Count; i++) // Проходим по всем атрибутам предмета
             {
@@ -429,13 +429,6 @@ public class PlayerInventory : MonoBehaviour
     // Update is called once per frame
 
 
-    //public void AddItem(Item item)
-    //{
-    //    Создаем экземпляр игрового объекта
-    //    GameObject modelInstance = Instantiate(item.itemModel); // item.itemModel должен быть префабом
-    //    item.itemModel = modelInstance; // Сохраняем экземпляр в itemModel
-    //    ammoItems.Add(item);
-    //}
 
     public void DeleteAmmo() //метод для удаления предмета из инфентаря боеприпасов
     {

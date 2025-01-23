@@ -15,5 +15,9 @@ public class ItemAttribute
 
     public ItemAttribute() { }
 
+    public ItemAttribute Clone()
+    {
+        return new ItemAttribute(attributeName, attributeValue); // Создаем новую копию с теми же значениями
+    }
 }
 

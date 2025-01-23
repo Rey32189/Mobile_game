@@ -5,6 +5,10 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour // мигание противника и его смерть
 {
+    
+    public Icheznovenie_sten disappearingWall; // —сылка на стену дл€ уничтожени€
+    public int nomer_stens; // «начение врага дл€ св€зи со стеной
+
     public int health; // колличество жизней
 
     private Material matBlink; // материал мигани€
@@ -30,13 +34,43 @@ public class Enemy : MonoBehaviour // мигание противника и его смерть
 
         explosion = Resources.Load("Explosion");
 
-        vragRef = Resources.Load("Vrag");
+        // в зависимости от номера стены выбираем разные префабы врагов
+        // с разными врагами предутс€ развивать это место кода
+        if (nomer_stens == 1 )
+        {
+            vragRef = Resources.Load("Vrag");
+        }
+        if (nomer_stens == 2)
+        {
+            vragRef = Resources.Load("Vrag_1");
+        }
+        if (nomer_stens == 3)
+        {
+            vragRef = Resources.Load("Vrag_2");
+        }
 
         spriteRend = GetComponent<MeshRenderer>(); // ркализуетс€ компонент спрайт рендер
 
         matBlink = Resources.Load("EnemyBlink", typeof(Material)) as Material; //Resources - путь папки с материалом load подгурузить "EnemyBlink" искать что то с этим названием
         //  typeof(Material) из какого вида надо найти что то as Material испольовать его как материал
         matDefault = spriteRend.material; // базовый материал, который есть сейчас
+        if (disappearingWall == null) // ≈сли стена не назначена, попробуем найти ее
+        {
+            disappearingWall = FindWallByValue(nomer_stens);
+        }
+    }
+    //кусок кода дл€ св€зывани€ со стеной
+    private Icheznovenie_sten FindWallByValue(int value)
+    {
+        Icheznovenie_sten[] walls = FindObjectsOfType<Icheznovenie_sten>();
+        foreach (Icheznovenie_sten wall in walls)
+        {
+            if (wall.nomer_stens == value) // —равниваем значени€
+            {
+                return wall;
+            }
+        }
+        return null; // ≈сли не нашли стену с таким значением
     }
 
     void ResetMaterial()
@@ -65,23 +99,41 @@ public class Enemy : MonoBehaviour // мигание противника и его смерть
     
     void Die()
     {
-        //Destroy(gameObject); // отвечает за разрушение объекта, но не подходит дл€ респауна
         GameObject explosionRef = (GameObject)Instantiate(explosion);// происходит инициаци€ частиц
         explosionRef.transform.position = new Vector3 (transform.position.x, transform.position.y, transform.position.z); // где по€вл€ютс€ частицы
 
-        lootDropper.DropLoot(); // --------------------
+        lootDropper.DropLoot(); // «апускаем выпадение предмета
 
 
         gameObject.SetActive(false);
         Invoke("Respawn", timeDestroy); // Invoke позвол€ет вызвать событие и настроить врем€ срабатывани€
+        if (disappearingWall != null) //если стена существует, то срабатывает счетчик
+        {
+            disappearingWall.EnemyDefeated(); // ”величиваем счетчик дл€ стены
+        }
         Destroy(explosionRef, 2f);
     }
 
     void Respawn()
     {
-        GameObject vragCopi = (GameObject)Instantiate(vragRef); // по€вилс€ ресурс, который будет создавать противников на базе врагреф
-        
-        vragCopi.transform.position = new Vector3(UnityEngine.Random.Range(spavnPos.x -3, spavnPos.x +3), spavnPos.y, spavnPos.z);
-        Destroy(gameObject); // происходит разрушение копии
+        // ѕолучаем текущее положение врага перед его уничтожением
+        Vector3 respawnPosition = transform.position;
+
+        // ƒобавл€ем небольшую случайную вариацию к позиции
+        respawnPosition += new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f));
+
+        // —оздаем нового врага
+        GameObject vragCopi = (GameObject)Instantiate(vragRef);
+
+        // ”станавливаем позицию нового врага на место уничтоженного врага
+        vragCopi.transform.position = respawnPosition;
+
+        // ”дал€ем текущий объект врага
+        Destroy(gameObject);
+    }
+    //дл€ обнулени€ ссылки на стену, когда уничтожена, дабы уменьшить колличество ошибок
+    public void DisappearingWallDestroyed()
+    {
+        disappearingWall = null; // ќбнул€ем ссылку на стену
     }
 }
