@@ -383,6 +383,10 @@
 "Assets/InventoryMaster/Editor/InventoryEditor.cs"
 "Assets/InventoryMaster/Editor/StorageInventoryEditor.cs"
 "Assets/InventoryMaster/Editor/TooltipEditor.cs"
+"Assets/SmartPoint/Core/Editor/CheckPointDrawer.cs"
+"Assets/SmartPoint/Core/Editor/CheckPointHandleEditor.cs"
+"Assets/SmartPoint/Core/Editor/EntityDrawer.cs"
+"Assets/SmartPoint/Core/Editor/SpawnEditor.cs"
 -langversion:9.0
 
 /deterministic

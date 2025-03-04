@@ -16,7 +16,7 @@ public class Orugie : MonoBehaviour // скрипт на стрельбу
     private float timeShot; // для задержки времени стрельбы
     public float startTime; // для задержки времени стрельбы
 
-    public int currentAmmo; // текущее количество боеприпасов в обойме
+    public int currentAmmo; // текущее количество боеприпасов в стволе
     public int allAmmo; // все боеприпасы в наличии
     public int fullAmmo; //максимальное колличество пуль для переноса
     public int damagAmmo; // дамаг боеприпасов
@@ -88,13 +88,13 @@ public class Orugie : MonoBehaviour // скрипт на стрельбу
 
             if (lastItemID > 0)
             {
-                Debug.Log("ID больше 0 так что пытаемся передать данные в метод для дамага");
+                Debug.Log("ID боеприпасов не равно 0 так что пытаемся передать данные в метод для дамага");
                 Item item = playerInventory.ammoInventory.ItemsInInventory[0];
                 EquipAmmo(item);
             }
             else
             {
-                Debug.Log("ID равен 0 так что дамаг нужно поставить на 0");
+                Debug.Log("ID равен 0 так что дамаг нужно поставить на 1");
                 damagAmmo = 0;
             }
         }
@@ -105,14 +105,15 @@ public class Orugie : MonoBehaviour // скрипт на стрельбу
         if (currentItemValue != lastItemValue) // Проверяем на изменение
         {
             allAmmo = currentItemValue; // Обновляем последнее значение
-                                        //SetWeaponByItemID(currentItemID); // Вызываем метод только при изменении
             playerInventory.ammoInventory.updateItemList(); // Обновляем список предметов в инвентаре
         }
         if (currentItemValue == 0) // проверяем, что бы предмет находился в инвентаре и если нет, то ставим боеприпасы на 0
         {
             allAmmo = 0;
             playerInventory.ammoInventory.updateItemList(); // Обновляем список предметов в инвентаре
+           
         }
+        
         if (timeShot <= 0)
         {
             if (Input.GetButtonDown("Fire1") && currentAmmo > 0) // для атаки с мышки
@@ -142,6 +143,19 @@ public class Orugie : MonoBehaviour // скрипт на стрельбу
         {
             Invoke("Reload", 0.5f);
         }
+        if (allAmmo == 0 && currentAmmo == 0)
+        {
+            if (playerInventory.ammoInventory.ItemsInInventory.Count > 0)
+            {
+                Item ammoItem = playerInventory.ammoInventory.ItemsInInventory[0];
+                if (ammoItem.itemValue == 0)
+                {
+                    playerInventory.DeleteAmmo();
+                }
+
+            }
+
+        }
     }
 
     public void Reload() // метод для расчета патрон
@@ -151,6 +165,7 @@ public class Orugie : MonoBehaviour // скрипт на стрельбу
         if (allAmmo <= 0)
         {
             return; // Если патронов нет, выходим из метода
+            //playerInventory.DecreaseAmmo(0); // Уменьшаем количество патронов в инвентаре
         }
 
         // Проверяем, заполнен ли магазин
@@ -176,6 +191,10 @@ public class Orugie : MonoBehaviour // скрипт на стрельбу
             }
 
             playerInventory.DecreaseAmmo(currentAmmo - (fullAmmo - neededAmmo)); // Уменьшаем количество патронов в инвентаре
+        }
+        if (allAmmo == 0 && currentAmmo == 0)
+        {
+            playerInventory.DeleteAmmo();
         }
 
     }

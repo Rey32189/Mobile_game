@@ -82,13 +82,46 @@ public class InventoryDesign : MonoBehaviour
         }
     }
 
+//    public void updateAllSlots()
+//    {
+//        Image slot = null;
+//#if UNITY_EDITOR
+//        Object prefab = PrefabUtility.CreateEmptyPrefab("Assets/InventoryMaster/Resources/Prefabs/Slot - Inventory.prefab");
+//#endif
+
+//        for (int i = 0; i < transform.GetChild(1).childCount; i++)
+//        {
+//            slot = transform.GetChild(1).GetChild(i).GetComponent<Image>();
+//            slot.sprite = slotDesignTemp.sprite;
+//            slot.color = slotDesignTemp.color;
+//            slot.material = slotDesignTemp.material;
+//            slot.type = slotDesignTemp.type;
+//            slot.fillCenter = slotDesignTemp.fillCenter;
+//        }
+//#if UNITY_EDITOR
+//        PrefabUtility.ReplacePrefab(slot.gameObject, prefab, ReplacePrefabOptions.ConnectToPrefab);
+//#endif
+
+//    }
+
+
     public void updateAllSlots()
     {
         Image slot = null;
-#if UNITY_EDITOR
-        Object prefab = PrefabUtility.CreateEmptyPrefab("Assets/InventoryMaster/Resources/Prefabs/Slot - Inventory.prefab");
-#endif
 
+        // Путь к префабу, который вы хотите обновить
+        string prefabPath = "Assets/InventoryMaster/Resources/Prefabs/Slot - Inventory.prefab";
+
+        // Получаем префаб из указанного пути
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+
+        // Проверяем, существует ли префаб
+        if (prefab == null)
+        {
+            Debug.LogError("Префаб не найден по указанному пути: " + prefabPath);
+            return;
+        }
+        
         for (int i = 0; i < transform.GetChild(1).childCount; i++)
         {
             slot = transform.GetChild(1).GetChild(i).GetComponent<Image>();
@@ -98,9 +131,8 @@ public class InventoryDesign : MonoBehaviour
             slot.type = slotDesignTemp.type;
             slot.fillCenter = slotDesignTemp.fillCenter;
         }
-#if UNITY_EDITOR
-        PrefabUtility.ReplacePrefab(slot.gameObject, prefab, ReplacePrefabOptions.ConnectToPrefab);
-#endif
 
+        // Применяем изменения к префабу
+        PrefabUtility.ApplyPrefabInstance(prefab, InteractionMode.AutomatedAction);
     }
 }

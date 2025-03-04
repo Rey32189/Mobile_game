@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4173985999134618199
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1954407406522112428}
+  - component: {fileID: 6967324971965887862}
+  m_Layer: 0
+  m_Name: SpawnController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1954407406522112428
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4173985999134618199}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.28219944, y: 3.270574, z: -10.332913}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6967324971965887862
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4173985999134618199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ee1c44cc4faf1a4a9d3955aa5cec7a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CP_Controller: {fileID: 0}
+  spawnMode: 0
+  spawnArea: 0
+  spawnLocation: 0
+  spawnDirection: 0
+  exitCondition: 0
+  exitTime: 10
+  exitSpawnCount: 5
+  customDirection: 0
+  includeYPlane: 0
+  entityPool: []
+  spawnDelay: 1
+  amountToSpawn: 1
+  refillDelay: 0
+  enableRefillMax: 0
+  refillMax: 1
+  enableSpawnMax: 0
+  constSpawnMax: 1
+  checkForCollision: 0
+  offsetSpawn: {x: 0, y: 0, z: 0}
+  circleRadius: {x: 0, y: 1}
+  sphereRadius: 0
+  rectSize: {x: 1, y: 1}
+  rectPrismSize: {x: 1, y: 1, z: 1}
+  hideGizmos: 0
+  equalSpawnChance: 0
+  targetEntity: {fileID: 0}
+  onSpawnEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  onExitEvent:
+    m_PersistentCalls:
+      m_Calls: []

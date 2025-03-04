@@ -23,6 +23,8 @@ TagManager:
   - Hotbar
   - Timer
   - AmmoInventory
+  - Capsule
+  - Object
   layers:
   - Default
   - TransparentFX

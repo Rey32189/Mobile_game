@@ -106,7 +106,7 @@ public class Enemy : MonoBehaviour // мигание противника и его смерть
 
 
         gameObject.SetActive(false);
-        Invoke("Respawn", timeDestroy); // Invoke позвол€ет вызвать событие и настроить врем€ срабатывани€
+        //Invoke("Respawn", timeDestroy); // Invoke позвол€ет вызвать событие и настроить врем€ срабатывани€
         if (disappearingWall != null) //если стена существует, то срабатывает счетчик
         {
             disappearingWall.EnemyDefeated(); // ”величиваем счетчик дл€ стены

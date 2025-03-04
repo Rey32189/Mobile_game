@@ -9,15 +9,18 @@ public class Upravlenie : MonoBehaviour
     //// Start is called before the first frame update
     //[SerializeField] float Speed; //скорость движения
     //[SerializeField] float jumpForce = 50000.0f; // сила прыжка
-    private bool isMoving = false;
-    private bool isMovingL = false;
-    private bool isMovingVerh = false;
-    private bool isMovingNiz = false;
+
+
+    // это на будущее с управлением развлекаться
+    //private bool isMoving = false;
+    //private bool isMovingL = false;
+    //private bool isMovingVerh = false;
+    //private bool isMovingNiz = false;
   
 
     public float speed = 5f; // Скорость движения
     [SerializeField] float jumpForce = 50000.0f; // Сила прыжка
-    private bool Jimpup = false;
+   // private bool Jimpup = false;
 
     public Transform groundCheck; // Точка проверки соприкосновения с землей
     public float groundCheckRadius = 0.2f; // Радиус проверки соприкосновения
@@ -118,43 +121,43 @@ public class Upravlenie : MonoBehaviour
 
     }
   
-    public void OnButtonDownJimp()
-    {
-        Jimpup = true;
-    }
-    public void OnButtonUpJimp()
-    {  
-        Jimpup = false; 
-    }
-    public void OnButtonDown()
-    {
-        isMoving = true;
-    }
+    //public void OnButtonDownJimp()
+    //{
+    //    Jimpup = true;
+    //}
+    //public void OnButtonUpJimp()
+    //{  
+    //    Jimpup = false; 
+    //}
+    //public void OnButtonDown()
+    //{
+    //    isMoving = true;
+    //}
 
-    public void OnButtonUp()
-    {
-        isMoving = false;
-    }
-    public void OnButtonDownL()
-    {
-        isMovingL = true;
-    }
+    //public void OnButtonUp()
+    //{
+    //    isMoving = false;
+    //}
+    //public void OnButtonDownL()
+    //{
+    //    isMovingL = true;
+    //}
 
-    public void OnButtonUpL()
-    {
-        isMovingL = false;
-    }
-    public void OnButtonDownVerh()
-    {
-        isMovingVerh = true;
-    }
-    public void OnButtonUpVerh()
+    //public void OnButtonUpL()
+    //{
+    //    isMovingL = false;
+    //}
+    //public void OnButtonDownVerh()
+    //{
+    //    isMovingVerh = true;
+    //}
+    //public void OnButtonUpVerh()
 
-    { isMovingVerh = false; }
-    public void OnButtonDownNiz()
-    { isMovingNiz = true; }
+    //{ isMovingVerh = false; }
+    //public void OnButtonDownNiz()
+    //{ isMovingNiz = true; }
 
-    public void OnButtonUpNiz()
-    { isMovingNiz = false; }
+    //public void OnButtonUpNiz()
+    //{ isMovingNiz = false; }
    
 }

@@ -2,6 +2,7 @@
 using System.Collections; // Подключение пространства имен для работы с коллекциями и коллекциями данных
 using UnityEngine.UI; // Подключение пространства имен для работы с элементами пользовательского интерфейса (UI) в Unity
 using UnityEngine.EventSystems; // Подключение пространства имен для работы с событиями ввода (например, клики мыши, касания)
+using static UnityEditor.Progress;
 
 public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDragHandler // Определение класса DragItem, который наследует MonoBehaviour и реализует интерфейсы для обработки событий перетаскивания
 {
@@ -13,15 +14,52 @@ public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDr
     private Inventory inventory; // Ссылка на компонент Inventory, который управляет инвентарем
     private Transform draggedItemBox; // Ссылка на объект, в который будет помещен перетаскиваемый элемент
 
+    
+
+    public PlayerInventory playerInventory; // Ссылка на PlayerInventory
+    public delegate void ItemEventHandler(Item item); // Делегат для события
+    public static event ItemEventHandler ItemPickedUp; // Событие, которое будет вызвано, когда предмет будет взят
+    private Orugie orugie; // ссылка на код с оружием
+
     public delegate void ItemDelegate(); // Определение делегата для обновления списка инвентаря
     public static event ItemDelegate updateInventoryList; // Объявление статического события, которое будет вызываться для обновления списка инвентаря
+
+
+    bool IsAmmoInventorySlot(Transform slot) // это метод для того, что бы сразу определять тег инвентаря боеприпасов при перетаскивании предметов
+    {
+        Transform parent = slot.parent;
+        while (parent != null)
+        {
+            if (parent.CompareTag("AmmoInventory"))
+            {
+                return true;
+            }
+            parent = parent.parent;
+        }
+        return false;
+    }
+
+
     void Start() // Метод, который вызывается при инициализации объекта
     {
+        
         rectTransform = GetComponent<RectTransform>(); // Получение компонента RectTransform текущего объекта
         canvasGroup = GetComponent<CanvasGroup>(); // Получение компонента CanvasGroup текущего объекта
         rectTransformSlot = GameObject.FindGameObjectWithTag("DraggingItem").GetComponent<RectTransform>(); // Поиск объекта с тегом "DraggingItem" и получение его RectTransform
         inventory = transform.parent.parent.parent.GetComponent<Inventory>(); // Получение компонента Inventory из родительского объекта
         draggedItemBox = GameObject.FindGameObjectWithTag("DraggingItem").transform; // Получение трансформа объекта с тегом "DraggingItem"
+
+
+        // Убедитесь, что playerInventory ссылается на правильный объект
+        if (playerInventory == null)
+        {
+            playerInventory = FindObjectOfType<PlayerInventory>();
+        }
+        if (orugie == null)
+        {
+            orugie = FindObjectOfType<Orugie>(); // Ищем объект Orugie в сцене
+        }
+        
     }
 
     public void OnDrag(PointerEventData data) // Метод, который вызывается при перетаскивании объекта
@@ -38,6 +76,18 @@ public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDr
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransformSlot, Input.mousePosition, data.pressEventCamera, out localPointerPosition)) // Преобразование координат экрана в локальные координаты RectTransform слота
             {
                 rectTransform.localPosition = localPointerPosition - pointerOffset; // Установка локальной позиции RectTransform с учетом смещения указателя
+                if (oldSlot.transform.parent.parent.CompareTag("AmmoInventory")) // проверяем, был ли взят предмет из аммоинвентаря
+                {
+                    if (orugie.currentAmmo != 0 )
+                    {
+                        Debug.Log("взяли обойму в руки");
+                        Item item = GetComponent<ItemOnObject>().item;
+                        ItemPickedUp?.Invoke(item);
+                       
+                    }
+                   
+
+                }
                 if (transform.GetComponent<ConsumeItem>().duplication != null) // Проверка на наличие дубликата у ConsumeItem
                     Destroy(transform.GetComponent<ConsumeItem>().duplication); // Уничтожение дубликата, если он существует
             }
@@ -48,13 +98,14 @@ public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDr
 
 
 
-
     public void OnPointerDown(PointerEventData data) // Метод, который вызывается при нажатии указателя на объект
     {
         if (data.button == PointerEventData.InputButton.Left) // Проверка, что нажата левая кнопка мыши
         {
             RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, data.position, data.pressEventCamera, out pointerOffset); // Преобразование координат экрана в локальные координаты прямоугольника
             oldSlot = transform.parent.gameObject; // Сохранение ссылки на родительский объект (слот инвентаря)
+
+        
         }
         if (updateInventoryList != null) // Проверка, что событие обновления инвентаря не равно null
             updateInventoryList(); // Вызов события обновления инвентаря
@@ -72,6 +123,7 @@ public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDr
 
     public void OnEndDrag(PointerEventData data) // Метод, который вызывается, когда пользователь завершает перетаскивание объекта.
     {
+        
         if (data.button == PointerEventData.InputButton.Left) // Проверка, что была нажата левая кнопка мыши.
         {
             canvasGroup.blocksRaycasts = true; // Включение блокировки взаимодействия с другими элементами интерфейса.
@@ -81,6 +133,7 @@ public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDr
 
             if (newSlot != null) // Проверка, что новый слот был найден.
             {
+                
                 // Получение предметов из слотов, GameObjects и RectTransform
                 GameObject firstItemGameObject = this.gameObject; // Ссылка на текущий объект (предмет, который перетаскивается).
                 GameObject secondItemGameObject = newSlot.parent.gameObject; // Ссылка на объект второго слота (куда будет перемещен предмет).
@@ -100,22 +153,11 @@ public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDr
                 bool firstItemStack = false; // Переменная для отслеживания, может ли первый предмет быть сложен.
 
                 // Проверка, является ли новый слот инвентарем боеприпасов
-                bool isAmmoInventory = newSlot.parent.parent.CompareTag("AmmoInventory"); // Проверяем тег у родителя родителя
-
-                if (isAmmoInventory && firstItem.itemType != ItemType.Ammo)
-                {
-                    // Если это инвентарь боеприпасов, но предмет не является боеприпасом, возвращаем
-                    firstItemGameObject.transform.SetParent(oldSlot.transform);
-                    firstItemRectTransform.localPosition = Vector3.zero;
-                    return;
-                }
-
-
-
-
-
-
-
+                bool isAmmoInventory = IsAmmoInventorySlot(newSlot.transform);
+                //if (ShouldCreateAmmoDuplication()) // это если вытаскиваем обойму из аммоинвенторя если там еще остались патроны
+                //{
+                //    CreateAmmoDuplication(this.gameObject); // Создаем дубликат обоймы с нулевым значением
+                //}
                 if (sameItem) // Если предметы одинаковые.
                     {
                         firstItemStack = firstItem.itemValue < firstItem.maxStack; // Проверка, можно ли сложить первый предмет.
@@ -129,8 +171,9 @@ public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDr
                     if (Inventory.tag.Equals("Slot")) // Проверка, является ли инвентарь слотом.
                         Inventory = Inventory.transform.parent.parent.gameObject; // Переход к родительскому инвентарю, если это слот.
 
-                    // перетаскивание в инвентаре".    
-                    if (Inventory.GetComponent<Hotbar>() == null && Inventory.GetComponent<EquipmentSystem>() == null && Inventory.GetComponent<CraftSystem>() == null) // Проверка, что инвентарь не является горячей панелью, системой оборудования или системой крафта.
+               
+                // перетаскивание в инвентаре".    
+                if (Inventory.GetComponent<Hotbar>() == null && Inventory.GetComponent<EquipmentSystem>() == null && Inventory.GetComponent<CraftSystem>() == null ) // Проверка, что инвентарь не является горячей панелью, системой оборудования или системой крафта.
                     {
                         //вы не можете прикреплять предметы к результирующему слоту системы крафта
                         if (newSlot.transform.parent.tag == "ResultSlot" || newSlot.transform.tag == "ResultSlot" || newSlot.transform.parent.parent.tag == "ResultSlot") // Проверка, является ли новый слот слотом результата крафта.
@@ -138,22 +181,43 @@ public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDr
                             firstItemGameObject.transform.SetParent(oldSlot.transform); // Возвращение предмета обратно в старый слот, если он был перемещен в слот результата.
                             firstItemRectTransform.localPosition = Vector3.zero; // Сброс позиции предмета к началу относительно старого слота.
                         }
-
+                    
 
                         else // Начало блока else, который выполняется, если условие выше не выполнено
                         {
                             int newSlotChildCount = newSlot.transform.parent.childCount; // Получаем количество дочерних объектов у родителя нового слота
                             bool isOnSlot = newSlot.transform.parent.GetChild(0).tag == "ItemIcon"; // Проверяем, есть ли уже предмет в новом слоте
                                                                                                     // перетаскивание на слот, где уже есть предмет
-                            if (newSlotChildCount != 0 && isOnSlot) // Если в новом слоте есть предмет
+
+                        if (newSlotChildCount != 0 && isOnSlot) // Если в новом слоте есть предмет
                             {
-                                // проверяем, помещается ли один предмет в другой
-                                bool fitsIntoStack = false; // Переменная для проверки, помещается ли один предмет в другой
+                            // Проверка на инвентарь боеприпасов
+                            bool isFirstItemAmmo = firstItem.itemType == ItemType.Ammo; // Проверка, является ли первый предмет боеприпасом.
+                            bool isSecondItemAmmo = secondItem.itemType == ItemType.Ammo; // Проверка, является ли второй предмет боеприпасом.
+                            Debug.Log("isFirstItemAmmo: " + isFirstItemAmmo);
+                            Debug.Log("isSecondItemAmmo: " + isSecondItemAmmo);
+                            // Если хотя бы один из предметов не является боеприпасом, отменяем замену
+                            if (isAmmoInventory)
+                            {
+                                if (!isFirstItemAmmo || !isSecondItemAmmo)
+                                {
+                                    firstItemGameObject.transform.SetParent(oldSlot.transform); // Возвращаем первый предмет в старый слот.
+                                    firstItemRectTransform.localPosition = Vector3.zero; // Сбрасываем позицию первого предмета.
+                                    if (secondItemGameObject != null)
+                                    {
+                                        secondItemGameObject.transform.SetParent(newSlot.transform); // Возвращаем второй предмет в новый слот.
+                                        secondItemRectTransform.localPosition = Vector3.zero; // Сбрасываем позицию второго предмета.
+                                    }
+                                    return; // Прерываем выполнение метода.
+
+                                }
+                            }
+                            // проверяем, помещается ли один предмет в другой
+                            bool fitsIntoStack = false; // Переменная для проверки, помещается ли один предмет в другой
                                 if (sameItem) // Если предметы одинаковые
                                     fitsIntoStack = (firstItem.itemValue + secondItem.itemValue) <= firstItem.maxStack; // Проверяем, помещаются ли они в один стек
-
-                                // если предмет стекуемый, проверяем, что стеки первого и второго предметов не полные и что они одинаковые
-                                if (inventory.stackable && sameItem && firstItemStack && secondItemStack) // Если инвентарь позволяет стекать предметы и оба предмета одинаковы
+                            // если предмет стекуемый, проверяем, что стеки первого и второго предметов не полные и что они одинаковые
+                            if (inventory.stackable && sameItem && firstItemStack && secondItemStack) // Если инвентарь позволяет стекать предметы и оба предмета одинаковы
                                 {
                                     // если предмет не помещается в другой предмет
                                     if (fitsIntoStack && !sameItemRerferenced) // Если предметы помещаются в один стек и ссылки на них разные
@@ -197,7 +261,7 @@ public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDr
                                     if (sameItem) // если предметы одинаковые
                                         rest = (firstItem.itemValue + secondItem.itemValue) % firstItem.maxStack; // вычисляем остаток от сложения значений предметов
 
-                                    // fill up the other stack and adds the rest to the other stack // заполняет другой стек и добавляет остаток в другой стек
+                                    //fill up the other stack and adds the rest to the other stack // заполняет другой стек и добавляет остаток в другой стек
                                     if (!fitsIntoStack && rest > 0) // если не помещается в стек и есть остаток
                                     {
                                         secondItem.itemValue = firstItem.maxStack; // устанавливаем максимальное значение для второго предмета
@@ -235,6 +299,17 @@ public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDr
                                         // swapping for the rest of the inventorys // обмен для остальных предметов в инвентаре
                                         else if (oldSlot.transform.parent.parent.GetComponent<EquipmentSystem>() == null) // если старый слот не принадлежит системе экипировки
                                         {
+
+                                        if (isAmmoInventory)
+                                        {
+
+                                            if (orugie.currentAmmo != 0)
+                                            {
+                                                // Получаем старую обойму (ту, которая была в слоте до замены)
+                                                // Вызываем метод OnItemPickedUp для старой обоймы
+                                                ItemPickedUp?.Invoke(secondItem);
+                                            }
+                                        }
                                             firstItemGameObject.transform.SetParent(secondItemGameObject.transform.parent); // перемещаем первый предмет под родитель второго предмета
                                             secondItemGameObject.transform.SetParent(oldSlot.transform); // перемещаем второй предмет обратно в старый слот
                                             secondItemRectTransform.localPosition = Vector3.zero; // устанавливаем локальную позицию второго предмета
@@ -247,7 +322,18 @@ public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDr
                             //empty slot // Пустой слот
                             else // Иначе
                             {
-                                if (newSlot.tag != "Slot" && newSlot.tag != "ItemIcon") // Если новый слот не является слотом и не является иконкой предмета
+                            if (isAmmoInventory)
+                            {
+                                if(firstItem.itemType != ItemType.Ammo)
+                                {
+                                    // Если это инвентарь боеприпасов, но предмет не является боеприпасом, возвращаем
+                                    firstItemGameObject.transform.SetParent(oldSlot.transform);
+                                    firstItemRectTransform.localPosition = Vector3.zero;
+                                    return;
+                                }
+                               
+                            }
+                            if (newSlot.tag != "Slot" && newSlot.tag != "ItemIcon") // Если новый слот не является слотом и не является иконкой предмета
                                 {
                                     firstItemGameObject.transform.SetParent(oldSlot.transform); // Устанавливаем родителем первого предмета старый слот
                                     firstItemRectTransform.localPosition = Vector3.zero; // Устанавливаем локальную позицию первого предмета в ноль
@@ -264,9 +350,8 @@ public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDr
                         }
                     }
 
-
-                    // перетаскивание в горячую панель
-                    if (Inventory.GetComponent<Hotbar>() != null) // проверка, есть ли компонент Hotbar в инвентаре
+                // перетаскивание в горячую панель
+                if (Inventory.GetComponent<Hotbar>() != null) // проверка, есть ли компонент Hotbar в инвентаре
                     {
                         int newSlotChildCount = newSlot.transform.parent.childCount; // получаем количество дочерних элементов нового слота
                         bool isOnSlot = newSlot.transform.parent.GetChild(0).tag == "ItemIcon"; // проверяем, есть ли предмет в новом слоте
