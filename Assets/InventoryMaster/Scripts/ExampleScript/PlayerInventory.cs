@@ -18,7 +18,7 @@ public class PlayerInventory : MonoBehaviour
 
     [SerializeField]
     private ItemDataBaseList itemDatabase; // Ссылка на базу данных предметов
-
+    private Orugie orugie; // ссылка на код с оружием
 
     public GameObject inventory; // Переменная для хранения ссылки на объект инвентаря
     public GameObject ammoinvetory; // Переменная для хранения ссылки на объект инвентаря
@@ -53,6 +53,11 @@ public class PlayerInventory : MonoBehaviour
     public float currentDamage = 0; // Текущий урон игрока
     public float currentArmor = 0; // Текущая броня игрока
 
+    public int itemIDAmmo = -1;//переменная для хранения id боеприпасов
+    public int itemValueAmmo = 0;//переменная для хранения количества боеприпасов
+
+    //int damagAmmo; // переменная для хранения текущего дамага боеприпасов
+    private bool isDamageApplied; // Флаг для отслеживания применения дамага
     int normalSize = 3; // Нормальный размер инвентаря
 
     public void OnEnable() // Метод, вызываемый при активации объекта
@@ -70,6 +75,9 @@ public class PlayerInventory : MonoBehaviour
 
         Inventory.ItemEquip += EquipAmmo; // Подписка на событие экипировки предмета, вызывая метод EquipWeapon при его срабатывании
         Inventory.UnEquipItem += UnEquipAmmo; // Подписка на событие разэкипировки предмета, вызывая метод UnEquipWeapon при его срабатывании
+
+
+        DragItem.ItemPickedUp += OnItemPickedUp;
     }
    
 
@@ -88,11 +96,12 @@ public class PlayerInventory : MonoBehaviour
 
         Inventory.UnEquipItem -= UnEquipAmmo;
         Inventory.ItemEquip -= EquipAmmo;
-   
-    }
-    public int itemIDAmmo = -1;//переменная для хранения id боеприпасов
-    public int itemValueAmmo = 0;//переменная для хранения количества боеприпасов
 
+
+        DragItem.ItemPickedUp -= OnItemPickedUp;
+
+    }
+    
 
     // Вложенный статический класс для обработки ItemID
     public int GetItemIDWeapon() //для возврата значения idоружия и дальнейшей его передачи
@@ -128,6 +137,7 @@ public class PlayerInventory : MonoBehaviour
 
     void UnEquipWeapon(Item item) // Метод для разэкипировки оружия
     {
+      
         if (item.itemType == ItemType.Weapon) // Проверяем, является ли предмет оружием
         {
             for (int i = 0; i < item.itemAttributes.Count; i++) // Проходим по всем атрибутам предмета
@@ -143,38 +153,82 @@ public class PlayerInventory : MonoBehaviour
     }
     public void EquipAmmo(Item item) // Метод для экипировки боеприпасов
     {
-        Debug.Log("EquipAmmo вызван с Item: " + item);
-
         if (item.itemType == ItemType.Ammo) // Проверяем, является ли предмет боеприпасов
         {
-            Debug.Log("Предмет является боеприпасов.");
-
             // Устанавливаем itemID в ItemIDHandler только один раз
             if (item.itemID != 0) // Проверяем, что ItemID не равен 0 
             {
+
+                
+
                 itemIDAmmo = item.itemID;
-                Debug.Log("ItemID установлен: " + item.itemID);
-            }
-            if (item.itemValue != 0) // Проверяем, что ItemID не равен 0 
-            {
                 itemValueAmmo = item.itemValue;
-                Debug.Log("itemValueAmmo установлен: " + item.itemValue);
+                if (!isDamageApplied)
+                {
+                    for (int i = 0; i < item.itemAttributes.Count; i++) // Проходим по всем атрибутам предмета
+                    {
+                        if (item.itemAttributes[i].attributeName == "Damage")
+                        {
+                            maxDamage += item.itemAttributes[i].attributeValue; // Увеличиваем максимальный урон
+                            currentDamage = maxDamage; // Обновляем текущий урон до максимального
+                            isDamageApplied = true; // Устанавливаем флаг, что дамаг был применен
+                        }
+                    }
+                }
+               
             }
-            else
-            {
-                Debug.LogWarning("itemValue равен 0, не устанавливаем оружие.");
-            }
-        }
-        else
-        {
-            Debug.LogWarning("Предмет не является боеприпасом.");
+           
         }
     }
 
 
+    private void OnItemPickedUp(Item item) //метод для перетасквивания патрон из ствола в обойму
+    {
+        //Debug.Log($"Предмет был взят: {item.itemName}");
+        //Debug.Log("метод разэкипировки запущен");
+        if (item.itemType == ItemType.Ammo && item.itemID != 0) // Проверяем, является ли предмет боеприпасом
+        {
+            for (int i = 0; i < item.itemAttributes.Count; i++) // Проходим по всем атрибутам предмета
+            {
+
+                    itemIDAmmo = 0; // Получаем ID предмета                                                  
+                   // Debug.Log("Найден ItemID: " + itemIDAmmo);
+                    if (orugie.currentAmmo > 0)
+                    {
+                        //Debug.Log("Патрон в стволе больше 0");
+
+                        // Вычисляем, сколько патронов можно добавить в обойму
+                        int availableSpaceInMagazine = item.maxStack - item.itemValue; // Сколько еще патронов можно добавить в обойму
+                        int ammoToTransfer = Mathf.Min(availableSpaceInMagazine, orugie.currentAmmo); // Минимум из доступного места и патронов в стволе
+
+                        // Переносим патроны
+                        item.itemValue += ammoToTransfer; // Увеличиваем количество патронов в обойме
+                        orugie.currentAmmo -= ammoToTransfer; // Уменьшаем количество патронов в стволе
+                        //Debug.Log($"Перенесено патронов: {ammoToTransfer}, в обойме теперь: {item.itemValue}, в стволе осталось: {orugie.currentAmmo}");
+                    }
+                
+            }
+        }
+        if (isDamageApplied)
+        {
+            for (int i = 0; i < item.itemAttributes.Count; i++) // Проходим по всем атрибутам предмета
+            {
+                if (item.itemAttributes[i].attributeName == "Damage")
+                {
+                    maxDamage -= item.itemAttributes[i].attributeValue; // Увеличиваем максимальный урон
+                    currentDamage = maxDamage; // Обновляем текущий урон до максимального
+                    isDamageApplied = false;
+                }
+            }
+        }
+        
+        
+    }
+
     void UnEquipAmmo(Item item) // Метод для разэкипировки боеприпасов
     {
-        if (item.itemType == ItemType.Ammo) // Проверяем, является ли предмет оружием
+        Debug.Log("метод разэкипировки запущен");
+        if (item.itemType == ItemType.Ammo) // Проверяем, является ли предмет боеприпасом
         {
             for (int i = 0; i < item.itemAttributes.Count; i++) // Проходим по всем атрибутам предмета
             {
@@ -183,13 +237,22 @@ public class PlayerInventory : MonoBehaviour
                 {
                     itemIDAmmo = 0; // Получаем ID предмета                                                  
                     Debug.Log("Найден ItemID: " + itemIDAmmo);
+                    if (orugie.currentAmmo > 0)
+                    {
+                        Debug.Log("патрон в стволе больше 0");
+                        item.itemValue = orugie.currentAmmo;
+                        orugie.currentAmmo = 0;
+                    }
                 }
-                if (item.itemValue != 0) // Проверяем, что ItemID не равен 0 
-                {
-                    itemValueAmmo = item.itemValue;
-                    Debug.Log("itemValueAmmo установлен: " + item.itemValue);
-                }
+               
+                //if (item.itemValue != 0) // Проверяем, что ItemID не равен 0 
+                //{
+                //    itemValueAmmo = item.itemValue;
+                //    Debug.Log("itemValueAmmo установлен: " + item.itemValue);
+                //}
             }
+            // Сбрасываем флаг при разэкипировке
+            isDamageApplied = false;
         }
     }
     void OnBackpack(Item item) // Метод, вызываемый при экипировке рюкзака
@@ -314,12 +377,16 @@ public class PlayerInventory : MonoBehaviour
         if (ammoinvetory != null)
         {
             ammoInventory = ammoinvetory.GetComponent<Inventory>(); // Получаем компонент инвентаря для боеприпасов
-            Debug.Log("Инвентарь боеприпасов инициализирован.");
+            //Debug.Log("Инвентарь боеприпасов инициализирован.");
+            ammoInventory.gameObject.SetActive(true);
         }
         else
         {
             Debug.LogError("Инвентарь боеприпасов не установлен.");
         }
+
+        orugie = FindObjectOfType<Orugie>(); // Ищем объект Orugie в сцене
+
     }
 
     void UpdateHPBar() // Метод для обновления полосы здоровья (закомментирован)
@@ -405,8 +472,10 @@ public class PlayerInventory : MonoBehaviour
 
     public void OnUnEquipItem(Item item) // Метод, вызываемый при разэкипировке предмета
     {
+        
         for (int i = 0; i < item.itemAttributes.Count; i++) // Проходим по всем атрибутам предмета
         {
+            
             if (item.itemAttributes[i].attributeName == "Health") // Если атрибут - здоровье
                 maxHealth -= item.itemAttributes[i].attributeValue; // Уменьшаем максимальное здоровье
             if (item.itemAttributes[i].attributeName == "Mana") // Если атрибут - мана
@@ -429,13 +498,6 @@ public class PlayerInventory : MonoBehaviour
     // Update is called once per frame
 
 
-    //public void AddItem(Item item)
-    //{
-    //    Создаем экземпляр игрового объекта
-    //    GameObject modelInstance = Instantiate(item.itemModel); // item.itemModel должен быть префабом
-    //    item.itemModel = modelInstance; // Сохраняем экземпляр в itemModel
-    //    ammoItems.Add(item);
-    //}
 
     public void DeleteAmmo() //метод для удаления предмета из инфентаря боеприпасов
     {
@@ -461,28 +523,16 @@ public class PlayerInventory : MonoBehaviour
         if (ammoInventory.ItemsInInventory.Count > 0)
         {
             Item ammoItem = ammoInventory.ItemsInInventory[0]; // Получаем текущий предмет
-            Debug.Log($"Получен предмет после перезарядки {ammoItem.itemValue}");
+            //Debug.Log($"Получен предмет после перезарядки {ammoItem.itemValue}");
             if (ammoItem.itemValue >= amount)
             {
                 ammoItem.itemValue -= amount; // Уменьшаем количество патронов
-                Debug.Log($"уменьшено колличество патрон {ammoItem.itemValue}");
-                if (ammoItem.itemValue == 0 )
-                {
-                    Debug.Log($"предмет равен 0 {ammoItem.itemValue}");
-                    if (ammoItem.itemModel != null)
-                    {
-                        DeleteAmmo();
-                        Debug.Log("запущен делит аммо");
-                    }
-                   // ammoInventory.ItemsInInventory.Remove(ammoItem); // Удаляем его из инвентаря
-                    Debug.Log("тут  должен был удалить предмет из инвентаря");
-                    
-                }
+                //Debug.Log($"уменьшено колличество патрон {ammoItem.itemValue}");
             }
-            else
-            {
-                Debug.LogWarning("удаление патрон не вышло");
-            }
+            //else
+            //{
+            //    Debug.LogWarning("удаление патрон не вышло");
+            //}
         }
     }
 
@@ -494,7 +544,6 @@ public class PlayerInventory : MonoBehaviour
         if (ammoInventory != null && ammoInventory.ItemsInInventory.Count > 0)
         {
             Item ammoItem = ammoInventory.ItemsInInventory[0]; // Получаем текущий предмет
-            //int newAmmoValue = ammoItem.itemValue; // Получаем текущее количество патронов
 
             // Проверяем, изменился ли ID или количество патронов
             if (ammoItem.itemID != itemIDAmmo || ammoItem.itemValue != itemValueAmmo)
@@ -502,10 +551,9 @@ public class PlayerInventory : MonoBehaviour
                 // Если значения изменились, обновляем переменные
                 itemIDAmmo = ammoItem.itemID;
                 itemValueAmmo = ammoItem.itemValue;
-
                 // Вызываем метод обновления
                 EquipAmmo(ammoItem);
-                Debug.Log($"Ammo Changed: ID = {itemIDAmmo}, Value = {itemValueAmmo}");
+                // Debug.Log($"Ammo Changed: ID = {itemIDAmmo}, Value = {itemValueAmmo}");
             }
         }
         else
@@ -515,14 +563,10 @@ public class PlayerInventory : MonoBehaviour
             {
                 itemIDAmmo = -1;
                 itemValueAmmo = 0;
-                Debug.Log("Ammo Inventory is empty, reset values.");
+                //Debug.Log("инвентарь боеприпасов пуст, сбросили значение ID и колличество");
             }
         }
 
-       
-
-
-        //CheckAmmoInventory();
         // Проверяем, нажата ли клавиша для открытия системы персонажа
         if (Input.GetKeyDown(inputManagerDatabase.CharacterSystemKeyCode))
         {
@@ -572,16 +616,7 @@ public class PlayerInventory : MonoBehaviour
     {
         currentHealth -= damage_player; // Уменьшаем здоровье на полученный урон
         UpdateHPBar(); // Обновляем полосу HP
-        //spriteRend.material = matBlink; // когда попали, жизни вычитаются
-
-        //if (health <= 0) // когда жизни опускается до 0 объект разрушается
-        //{
-        //    Die();
-        //}
-        //else
-        //{
-        //    Invoke("ResetMaterial", 0.5f); //если не убили, сработает функия через 0.2 секунды
-        //}
+       
         if (currentHealth < 0) // Проверяем, чтобы здоровье не стало отрицательным
         {
             currentHealth = 0; // Устанавливаем здоровье в 0, если оно меньше 0

@@ -217,7 +217,7 @@ public class InventoryEditor : Editor
             itemValue = EditorGUILayout.IntField("", itemValue, GUILayout.Width(40));
             GUI.color = Color.green;                                                                                            //set the color of all following guielements to green
             if (GUILayout.Button("Add Item"))                                                                                   //creating button with name "AddItem"
-            {                
+            {
                 inv.addItemToInventory(itemID, itemValue);                                                                      //and set the settings for possible stackedItems
                 inv.stackableSettings();
             }

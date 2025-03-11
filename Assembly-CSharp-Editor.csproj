@@ -63,8 +63,12 @@
     <Compile Include="Assets\InventoryMaster\Editor\StorageInventoryEditor.cs" />
     <Compile Include="Assets\InventoryMaster\Editor\TooltipEditor.cs" />
     <Compile Include="Assets\InventoryMaster\Editor\HotbarEditor.cs" />
+    <Compile Include="Assets\SmartPoint\Core\Editor\SpawnEditor.cs" />
     <Compile Include="Assets\InventoryMaster\Editor\InventoryEditor.cs" />
     <Compile Include="Assets\InventoryMaster\Editor\IM_Manager.cs" />
+    <Compile Include="Assets\SmartPoint\Core\Editor\CheckPointDrawer.cs" />
+    <Compile Include="Assets\SmartPoint\Core\Editor\CheckPointHandleEditor.cs" />
+    <Compile Include="Assets\SmartPoint\Core\Editor\EntityDrawer.cs" />
     <Compile Include="Assets\InventoryMaster\Editor\EquipmentSystemEditor.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -28,6 +28,7 @@ public class LootDropper : MonoBehaviour
     // Метод для генерации выпадения
     public void DropLoot()
     {
+        // Создаем новый список возможных предметов, которые могут выпасть
         List<GameObject> possibleDrops = new List<GameObject>();
         Dictionary<int, int> dropCounts = new Dictionary<int, int>(); // Словарь для хранения количества выпавших предметов по ID
 
@@ -42,6 +43,7 @@ public class LootDropper : MonoBehaviour
                 {
                     // Определяем количество предметов, которые будут выпадать
                     int dropAmount = Random.Range(loot.minDropAmount, loot.maxDropAmount + 1);
+                    Debug.Log($"Item ID: {loot.itemID}, Drop Amount: {dropAmount}");
                     if (dropCounts.ContainsKey(loot.itemID))
                     {
                         dropCounts[loot.itemID] += dropAmount; // Увеличиваем количество для существующего предмета
@@ -76,11 +78,10 @@ public class LootDropper : MonoBehaviour
                     pickUpItem = item.AddComponent<PickUpItem>();
                 }
 
-                // Присваиваем предмет в компонент PickUpItem
-                pickUpItem.item = itemData;
-
-                // Устанавливаем значение itemValue
-                pickUpItem.item.itemValue = drop.Value; // Устанавливаем количество предметов
+                // Используем глубокое клонирование itemData
+                Item clonedItemData = itemData.getDeepCopy(); // Здесь вы используете getDeepCopy()
+                clonedItemData.itemValue = drop.Value; // Устанавливаем количество предметов
+                pickUpItem.item = clonedItemData; // Присваиваем клонированный объект в pickUpItem
 
                 // Получаем компонент Rigidbody предмета
                 Rigidbody rb = item.GetComponent<Rigidbody>();
@@ -88,20 +89,19 @@ public class LootDropper : MonoBehaviour
                 // Если Rigidbody существует, применяем силу
                 if (rb != null)
                 {
-                    // Генерируем случайную силу в пределах указанного диапазона
                     Vector3 force = new Vector3(
                         Random.Range(-lootTable[0].forceRange.x, lootTable[0].forceRange.x),
                         Random.Range(-lootTable[0].forceRange.y, lootTable[0].forceRange.y),
                         Random.Range(-lootTable[0].forceRange.z, lootTable[0].forceRange.z)
                     );
 
-                    // Применяем силу к Rigidbody
                     rb.AddForce(force, ForceMode.VelocityChange);
                 }
 
                 dropsCreated++;
             }
         }
+
     }
 }
    

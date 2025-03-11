@@ -12,6 +12,11 @@ using static UnityEditor.Progress;
 
 public class Inventory : MonoBehaviour // Определяем класс Inventory, который наследует от MonoBehaviour
 {
+ 
+
+
+
+
     // Prefabs
     [SerializeField] // Позволяет редактировать поле в инспекторе Unity
     private GameObject prefabCanvasWithPanel; // Префаб для канваса с панелью
@@ -84,6 +89,7 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
     [SerializeField]
     public int positionNumberY; // Позиция по оси Y
 
+
     InputManager inputManagerDatabase; // Переменная для хранения ссылки на менеджер ввода
 
     // Event delegates for consuming, gearing
@@ -142,6 +148,8 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
     void Update() // Метод, вызываемый каждый кадр
     {
         updateItemIndex(); // Обновляем индексы предметов в инвентаре
+      
+
     }
 
     public void setAsMain() // Метод для установки инвентаря как основного
@@ -181,7 +189,7 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
                 (child.tag == "EquipmentSystem" || child.tag == "Panel" || child.tag == "MainInventory" || child.tag == "CraftSystem")) // И его тег соответствует одному из указанных
             {
                 if (AllInventoriesClosed != null && i == canvas.transform.childCount - 1) // Если событие закрытия инвентарей подписано и это последний объект
-                    AllInventoriesClosed(); // Вызываем событие закрытия всех инвентарей
+                    AllInventoriesClosed(); // Вызываем событие закрытия всех инвентарей 
             }
             else if (child.activeSelf && // Если дочерний объект активен
                      (child.tag == "EquipmentSystem" || child.tag == "Panel" || child.tag == "MainInventory" || child.tag == "CraftSystem")) // И его тег соответствует одному из указанных
@@ -377,13 +385,23 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
 
     public void updateSlotAmount(int width, int height) // Метод для обновления количества слотов
     {
+        Debug.LogError("код изменения");
         // Загружаем префаб слота, если он еще не загружен
         if (prefabSlot == null)
+        {
             prefabSlot = Resources.Load("Prefabs/Slot - Inventory") as GameObject;
+            if (prefabSlot == null)
+            {
+                Debug.LogError("Не удалось загрузить prefabSlot! Проверьте путь и имя файла.");
+            }
+
+        }
+
 
         // Если контейнер слотов не создан, создаем его
         if (SlotContainer == null)
         {
+
             SlotContainer = (GameObject)Instantiate(prefabSlotContainer); // Создаем контейнер
             SlotContainer.transform.SetParent(PanelRectTransform.transform); // Устанавливаем его родителем панели
             SlotContainerRectTransform = SlotContainer.GetComponent<RectTransform>(); // Получаем RectTransform контейнера
@@ -446,13 +464,16 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
     }
 
 
+
     public void updateSlotAmount() // Метод для обновления количества слотов в инвентаре
     {
+        //Debug.LogError("код изменения");
         if (prefabSlot == null)
             prefabSlot = Resources.Load("Prefabs/Slot - Inventory") as GameObject; // Загружаем префаб слота, если он еще не загружен
 
         if (SlotContainer == null) // Если контейнер слотов не создан
         {
+           // Debug.LogError("Если контейнер слотов не создан");
             SlotContainer = (GameObject)Instantiate(prefabSlotContainer); // Создаем контейнер
             SlotContainer.transform.SetParent(PanelRectTransform.transform); // Устанавливаем его родителем панели
             SlotContainerRectTransform = SlotContainer.GetComponent<RectTransform>(); // Получаем RectTransform контейнера
@@ -466,9 +487,12 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
 
         List<Item> itemsToMove = new List<Item>(); // Список предметов для перемещения
         List<GameObject> slotList = new List<GameObject>(); // Список слотов
+
+        //Debug.LogError("сделали список слотов");
         foreach (Transform child in SlotContainer.transform) // Проходим по всем дочерним объектам контейнера
         {
             if (child.tag == "Slot") { slotList.Add(child.gameObject); } // Добавляем слоты в список
+           // Debug.LogError("прошлись по дочерним объектам");
         }
 
         // Удаляем лишние слоты, если их больше, чем нужно
@@ -573,7 +597,7 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
                 }
             }
         }
-       
+        stackableSettings();
         updateItemList(); // Обновляем список предметов в инвентаре
     }
 
@@ -597,6 +621,7 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
                 }
             }
         }
+        stackableSettings();
         return false; // Возвращаем false, если предмет не найден
     }
 
@@ -620,7 +645,7 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
 
         }
 
-
+        stackableSettings();
         updateItemList(); // Обновляем список предметов в инвентаре
        
     }
@@ -652,7 +677,7 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
             }
         }
 
-
+        stackableSettings();
         updateItemList(); // Обновляем список предметов в инвентаре
         
         return null; // Возвращаем null, если не удалось добавить предмет
@@ -686,7 +711,7 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
      
         updateItemList(); // Обновляем список предметов в инвентаре
 
-
+        
     }
 
     public void updateIconSize(int iconSize) // Метод для обновления размера иконок
@@ -727,10 +752,12 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
                     text.text = "" + item.item.itemValue; // Устанавливаем текст с количеством предметов
                     text.enabled = stackable; // Устанавливаем видимость текста в зависимости от параметра stackable
                     textRectTransform.localPosition = posi; // Устанавливаем позицию текста
+
                 }
             }
         }
     }
+
 
     public void deleteAllItems() // Метод для удаления всех предметов из инвентаря
     {
@@ -947,7 +974,7 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
 
         updateItemList(); // Обновляем список предметов в инвентаре
 
-        
+
     }
 
 
@@ -1053,9 +1080,9 @@ public class Inventory : MonoBehaviour // Определяем класс Invent
             Debug.LogWarning($"No inventory file found at " + inventoryFilePath);
         }
     }
-
-
     
+
+
 
 
 
