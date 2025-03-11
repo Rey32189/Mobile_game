@@ -25,7 +25,7 @@ public class Orugie : MonoBehaviour // скрипт на стрельбу
     public int chet; // переменная для метода вычета пуль из предмета
 
 
-    private int lastItemID = 0; // Начальное значение, которое гарантированно не совпадет с валидным itemID
+    //private int lastItemID = 0; // Начальное значение, которое гарантированно не совпадет с валидным itemID
     private int lastItemValue = 0;
     [SerializeField]
     private TextMeshProUGUI ammoCount; // для счетчика
@@ -44,60 +44,60 @@ public class Orugie : MonoBehaviour // скрипт на стрельбу
 
 
 
-    public void EquipAmmo(Item item)
-    {
+    //public void EquipAmmo(Item item)
+    //{
 
-        if (playerInventory.ammoInventory.ItemsInInventory != null &&
-            playerInventory.ammoInventory.ItemsInInventory.Count > 0) // Добавляем проверку на наличие элементов
-        {
-            Debug.Log("прошли проверку на соответствие");
-            
-            var damageAttribute = item.itemAttributes.Find(attr => attr.attributeName == "Damage");
+    //    if (playerInventory.ammoInventory.ItemsInInventory != null &&
+    //        playerInventory.ammoInventory.ItemsInInventory.Count > 0) // Добавляем проверку на наличие элементов
+    //    {
+    //        Debug.Log("прошли проверку на соответствие");
 
-            if (damageAttribute != null) // Проверяем, найден ли атрибут "Damage"
-            {
-                Debug.Log("найден атрибут дамаг");
-                if (damagAmmo != damageAttribute.attributeValue)
-                {
-                    Debug.Log("дамаг не равен атрибуту и должен установиться");
-                    damagAmmo = damageAttribute.attributeValue; // Уменьшаем максимальный урон
-                }
-               
-            }
-        }
-        else
-        {
-            Debug.LogWarning("Инвентарь боеприпасов пуст.");
-        }
+    //        var damageAttribute = item.itemAttributes.Find(attr => attr.attributeName == "Damage");
 
-    }
+    //        if (damageAttribute != null) // Проверяем, найден ли атрибут "Damage"
+    //        {
+    //            Debug.Log("найден атрибут дамаг");
+    //            if (damagAmmo != damageAttribute.attributeValue)
+    //            {
+    //                Debug.Log("дамаг не равен атрибуту и должен установиться");
+    //                damagAmmo = damageAttribute.attributeValue; // Уменьшаем максимальный урон
+    //            }
+
+    //        }
+    //    }
+    //    else
+    //    {
+    //        Debug.LogWarning("Инвентарь боеприпасов пуст.");
+    //    }
+
+    //}
 
 
 
     void Update()
     {
-        int currentItemID = playerInventory.GetItemIDAmmo();
+        //int currentItemID = playerInventory.GetItemIDAmmo();
 
-        if (currentItemID != lastItemID) // Проверяем на изменение
-        {
-            lastItemID = currentItemID; // Обновляем последнее значение
-                                        // Проверяем, есть ли элементы в инвентаре
+        //if (currentItemID != lastItemID) // Проверяем на изменение
+        //{
+        //    lastItemID = currentItemID; // Обновляем последнее значение
+        //                                // Проверяем, есть ли элементы в инвентаре
 
 
-            playerInventory.ammoInventory.updateItemList(); // Обновляем список предметов в инвентаре
+        //    playerInventory.ammoInventory.updateItemList(); // Обновляем список предметов в инвентаре
 
-            if (lastItemID > 0)
-            {
-                Debug.Log("ID боеприпасов не равно 0 так что пытаемся передать данные в метод для дамага");
-                Item item = playerInventory.ammoInventory.ItemsInInventory[0];
-                EquipAmmo(item);
-            }
-            else
-            {
-                Debug.Log("ID равен 0 так что дамаг нужно поставить на 1");
-                damagAmmo = 0;
-            }
-        }
+        //    if (lastItemID > 0)
+        //    {
+        //        Debug.Log("ID боеприпасов не равно 0 так что пытаемся передать данные в метод для дамага");
+        //        Item item = playerInventory.ammoInventory.ItemsInInventory[0];
+        //        EquipAmmo(item);
+        //    }
+        //    else
+        //    {
+        //        Debug.Log("ID равен 0 так что дамаг нужно поставить на 1");
+        //        damagAmmo = 0;
+        //    }
+        //}
 
         int currentItemValue = playerInventory.GetItemValueAmmo();
 

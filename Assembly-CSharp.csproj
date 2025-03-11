@@ -131,6 +131,7 @@
     <Compile Include="Assets\script\Armor.cs" />
     <Compile Include="Assets\SmartPoint\Core\Scripts\ProximityChecker.cs" />
     <Compile Include="Assets\InventoryMaster\Scripts\Inventory\InputManager.cs" />
+    <Compile Include="Assets\script\StatsPlayer.cs" />
     <Compile Include="Assets\InventoryData.cs" />
     <Compile Include="Assets\InventoryMaster\Scripts\CraftSystem\LeftClick.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\SkewTextExample.cs" />

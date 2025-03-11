@@ -9,16 +9,16 @@ public class Damag_vrag : MonoBehaviour
     private void OnTriggerEnter(Collider currentHealth) // ищем объект с компонентом currentHealth
     {
 
-        if (currentHealth.CompareTag("Player"))
+        if (currentHealth.CompareTag("Player")) //для нанесения урона врагу
         {
-            PlayerInventory healthBar = currentHealth.GetComponent<PlayerInventory>(); // берет кусок кода из врага для взаимодействия
+            PlayerInventory healthBar = currentHealth.GetComponent<PlayerInventory>(); // берет кусок кода из игрока для взаимодействия
             if (healthBar != null)
             {
                 healthBar.TakeDamage_player(damage_player);
             }
             //Destroy(gameObject); // после взаимодействия разрушает стрелу
         }
-        else if (currentHealth.CompareTag("Object"))
+        else if (currentHealth.CompareTag("Object")) //для разрушения объектов
         {
             // Предполагаем, что у объекта есть компонент Health
             Destroy_objekt objectHealth = currentHealth.GetComponent<Destroy_objekt>();

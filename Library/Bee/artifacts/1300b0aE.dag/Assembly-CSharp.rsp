@@ -407,6 +407,7 @@
 "Assets/script/LootDropper.cs"
 "Assets/script/Orugie.cs"
 "Assets/script/pistolClic.cs"
+"Assets/script/StatsPlayer.cs"
 "Assets/SmartPoint/Core/Scripts/CheckPoint.cs"
 "Assets/SmartPoint/Core/Scripts/CheckPointController.cs"
 "Assets/SmartPoint/Core/Scripts/CheckpointTrigger.cs"

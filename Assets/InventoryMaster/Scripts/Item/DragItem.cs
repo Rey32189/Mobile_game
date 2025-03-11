@@ -80,7 +80,7 @@ public class DragItem : MonoBehaviour, IDragHandler, IPointerDownHandler, IEndDr
                 {
                     if (orugie.currentAmmo != 0 )
                     {
-                        Debug.Log("взяли обойму в руки");
+                        //Debug.Log("взяли обойму в руки");
                         Item item = GetComponent<ItemOnObject>().item;
                         ItemPickedUp?.Invoke(item);
                        
